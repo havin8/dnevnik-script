@@ -1,0 +1,678 @@
+/* ===== Новый стиль (тёмная тема, весь Дневник) =====
+   поле #000, панель #141414, разделитель #1c1c1c; карточки - тёмное стекло чуть светлее поля;
+   за стеклом - пятна света цвета акцента; цвет - только метки, статусы спокойные пастельные */
+.dn.neo{
+  --acc:#6c59d1; --acc-t:#8f7dff; --acc-rgb:108,89,209; --acc2-rgb:236,72,140;
+  --bg:#000; --surface:#0e0e0e; --surface-2:#161616; --hair:#1f1f1f; --line:#2a2a2a;
+  --ink:#f2f2f2; --muted:#9a9aa2; --soft:#6d6d75;
+  --gold:var(--acc-t); --gold-hi:var(--acc-t); --gold-wash:rgba(var(--acc-rgb),.16); --sel:var(--acc); --sel-ink:#fff; --gcol:var(--acc-t);
+  --good:#56c596; --good-wash:rgba(86,197,150,.12); --warn:#e9cf7a; --late:#e9cf7a; --bad:#e0679e; --bad-wash:rgba(224,103,158,.12); --att:#3cc6c0;
+  --m-hw:#ef9a58; --m-cw:#8cc4f0; --m-ctrl:#e57fa4; --m-lab:#a99bf5; --m-prac:#7dd3a8; --m-fin:#c3c9d4; --hw:#ef9a58; --cw:#8cc4f0;
+  --glass:rgba(16,16,16,.74); --gline:#262626;
+  --shadow:none;
+  --math-t:#0c1d27; --math-c:#cdeafa; --math-d:#4fb0e6;
+  --phys-t:#251019; --phys-c:#f6c9da; --phys-d:#e0679e;
+  --inf-t:#0d1f17;  --inf-c:#c9efdc;  --inf-d:#56c596;
+  --pe-t:#22200d;   --pe-c:#f3ebbf;   --pe-d:#d8c45a;
+  --intro-t:#17142a;--intro-c:#ddd6ff;--intro-d:#9d8cff;
+  --tec-t:#24180c;  --tec-c:#f6d9bd;  --tec-d:#e09a58;
+  --lang-t:#221d0d; --lang-c:#f3e2b5; --lang-d:#d8b45a;
+  --biz-t:#0b1f1f;  --biz-c:#c2eeec;  --biz-d:#3cc6c0;
+  --oth-t:#181818;  --oth-c:#e2e2e6;  --oth-d:#a9abb5;
+  --fh:DnHead,"Segoe UI",system-ui,sans-serif; --fb:DnBody,"Segoe UI",system-ui,sans-serif;
+  font-family:var(--fb);color:var(--ink);
+  background:
+    /* свет у верха страницы: широкое сияние акцента по центру, тёплое пятно второго цвета справа, мягкий отсвет ниже справа */
+    radial-gradient(1000px 460px at 50% -180px,rgba(var(--acc-rgb),.40),rgba(var(--acc-rgb),.10) 50%,transparent 75%),
+    radial-gradient(560px 300px at 82% -80px,rgba(var(--acc2-rgb),.24),transparent 70%),
+    radial-gradient(420px 260px at 22% -60px,rgba(var(--acc-rgb),.22),transparent 70%),
+    /* огни по всей высоте - чтобы стеклу всегда было что размывать: слева посередине, справа ниже, внизу по центру */
+    radial-gradient(640px 520px at 96% 38%,rgba(var(--acc2-rgb),.13),transparent 70%),
+    radial-gradient(620px 560px at 4% 58%,rgba(var(--acc-rgb),.15),transparent 70%),
+    radial-gradient(700px 520px at 88% 82%,rgba(var(--acc-rgb),.12),transparent 70%),
+    radial-gradient(900px 420px at 40% calc(100% + 80px),rgba(var(--acc2-rgb),.18),rgba(var(--acc-rgb),.06) 50%,transparent 75%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E"),
+    #000;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,repeat;min-height:100%;
+}
+/* акцент из настроек: пятна света, кнопки, выбранный пункт меню */
+.dn.neo[data-accent=amethyst]{--acc:#6c59d1;--acc-t:#8f7dff;--acc-rgb:108,89,209;--acc2-rgb:236,72,140}
+.dn.neo[data-accent=sapphire]{--acc:#3b6fe0;--acc-t:#6f98ff;--acc-rgb:59,111,224;--acc2-rgb:20,190,230}
+.dn.neo[data-accent=emerald]{--acc:#1d9e75;--acc-t:#4fd6a6;--acc-rgb:29,158,117;--acc2-rgb:60,200,90}
+.dn.neo[data-accent=rose]{--acc:#d6437f;--acc-t:#ff79b0;--acc-rgb:214,67,127;--acc2-rgb:124,92,255}
+.dn.neo[data-accent=gold]{--acc:#b8862e;--acc-t:#e8bf6a;--acc-rgb:184,134,46;--acc2-rgb:230,110,50}
+.dn.neo[data-accent=graphite]{--acc:#5c5f68;--acc-t:#c9ccd4;--acc-rgb:140,145,158;--acc2-rgb:110,115,130}
+.dn.neo .num,.dn.neo input,.dn.neo button,.dn.neo select,.dn.neo textarea{font-family:inherit}
+.dn.neo .num{font-variant-numeric:tabular-nums}
+.dn.neo :focus-visible{outline:none;box-shadow:0 0 0 2px var(--acc)}
+
+/* ---------- боковое меню ---------- */
+.dn.neo .app{grid-template-columns:300px minmax(0,1fr)}
+.dn.neo .side{background:#141414;border-right:1px solid #1c1c1c;padding:26px 20px 18px;gap:18px}
+.dn.neo .brand b{font-family:var(--fh);font-weight:500;font-size:16px}
+.dn.neo .brand span{color:#7a7a82}
+.dn.neo .brand .mark{border-radius:50%;background:#0c0c0c;color:var(--acc-t);border:1.5px solid #2e2e2e}
+.dn.neo .ngrp{font-weight:600;letter-spacing:.16em;color:#55555d;padding:18px 12px 6px}
+.dn.neo .ngrp:first-child{padding-top:4px}
+.dn.neo .ngrp:empty{border-top-color:#1f1f1f;padding:0;margin:14px 12px 8px}
+.dn.neo .nav a,.dn.neo .classic{font-family:var(--fh);font-weight:400;font-size:14px;letter-spacing:.01em;color:#f2f2f2;border-radius:12px;padding:9px 12px;white-space:nowrap}
+.dn.neo .nav a{background:none}
+.dn.neo .nav a svg,.dn.neo .classic svg{color:#e6e6ea;width:20px;height:20px}
+.dn.neo .nav a:hover{background:rgba(255,255,255,.03)}
+.dn.neo .nav a[aria-current="page"],.dn.neo .nav a[aria-current="page"] svg{background:none;color:var(--acc-t)}
+.dn.neo .nav a .bd{font-family:var(--fb);font-weight:700;background:#e0679e;color:#fff}
+.dn.neo .nav a .nd{font-family:var(--fb);font-weight:700;background:var(--acc);color:#fff}
+/* «Классический журнал»: при наведении - аккуратная обводка по скруглённому контуру */
+.dn.neo .classic{background:none;border:1.5px solid transparent;margin:0 -1.5px;transition:border-color .15s}
+.dn.neo .classic:hover{border-color:#3a3a3a;background:none;color:#fff}
+/* профиль внизу меню: карточка, нажатие открывает «Личный кабинет» */
+.dn.neo .me{border-radius:20px;border:1.5px solid #222;background:radial-gradient(120% 120% at 0% 0%,rgba(var(--acc-rgb),.14),transparent 60%),#0f0f0f;padding:12px;gap:12px}
+.dn.neo .me .who{padding:4px;border-radius:14px}
+.dn.neo .me .who.go{cursor:pointer;transition:background .15s}
+.dn.neo .me .who.go:hover{background:rgba(255,255,255,.035)}
+.dn.neo .me .who>div:not(.photo){flex:1;min-width:0}
+.dn.neo .me .who b{font-family:var(--fh);font-weight:400;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dn.neo .me .who span{font-size:12px;color:#7a7a82}
+.dn.neo .me .who .chv{width:16px;height:16px;color:#6d6d75;transform:rotate(-90deg);flex:none}
+.dn.neo .me .photo{width:42px;height:42px;box-shadow:0 0 0 2px #0f0f0f,0 0 0 3.5px var(--acc)}
+.dn.neo .wallet{gap:8px}
+.dn.neo .wallet div{border-radius:12px;background:rgba(255,255,255,.02);border:1px solid #232323;padding:7px 10px;font-weight:600}
+.dn.neo .wallet small{color:#6d6d75}
+/* аватар без фото: инициалы тоньше и изящнее */
+.dn.neo .photo{background:linear-gradient(145deg,#1d1d22,#121214);color:#e6e6ea}
+.dn.neo .photo .ini{font-family:var(--fh);font-weight:300;letter-spacing:.06em}
+
+/* ---------- верхняя строка ---------- */
+.dn.neo .main{padding:0 34px 48px}
+.dn.neo .top{background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);padding:28px 0 20px}
+.dn.neo .top h1{font-family:var(--fh);font-weight:500;font-size:30px;letter-spacing:.01em;white-space:nowrap}
+.dn.neo .top .cap{font-weight:600;letter-spacing:.16em;color:#6d6d75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw}
+.dn.neo .iconbtn,.dn.neo .top-ava .photo{width:44px;height:44px;border-radius:50%;background:rgba(14,14,14,.6);border:1.5px solid #333;color:#f2f2f2}
+.dn.neo .iconbtn:hover{border-color:#555}
+.dn.neo .iconbtn.out:hover{border-color:#e0679e;color:#f39bbd}
+.dn.neo .nowpill{height:44px;max-width:360px;white-space:nowrap;border-radius:999px;background:rgba(14,14,14,.6);border:1.5px solid #333;padding-inline:18px;color:#9a9aa2}
+.dn.neo .sync.ok{color:var(--good)}
+
+/* ---------- стеклянные карточки ---------- */
+.dn.neo :is(.card,.gridwrap,.now,.m-hero,.hero.prof,.aday,article.hw){border-radius:26px;border:1.5px solid var(--gline);color:var(--ink);
+  background:radial-gradient(90% 60% at 50% 0%,rgba(255,255,255,.025),transparent 70%),radial-gradient(45% 60% at 100% 0%,rgba(var(--acc-rgb),.06),transparent 70%),radial-gradient(60% 55% at 100% 100%,rgba(var(--acc-rgb),.05),transparent 70%),var(--glass);
+  -webkit-backdrop-filter:blur(40px) saturate(130%);backdrop-filter:blur(40px) saturate(130%);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.dn.neo .card{padding:24px}
+.dn.neo .gridwrap{padding:0;overflow:hidden}
+.dn.neo article.hw{border-radius:22px}
+.dn.neo .card>h2,.dn.neo .card .hd h2{font-family:var(--fh);font-weight:500;font-size:17px;letter-spacing:.01em}
+.dn.neo .card .hd{border-bottom:0;padding-bottom:0;margin-bottom:18px;align-items:center}
+.dn.neo .card .hd a,.dn.neo .link,.dn.neo .m-link{color:var(--acc-t);font-weight:500}
+.dn.neo .card .hd a{font-size:12.5px}
+.dn.neo .card .hd small{color:#6d6d75}
+.dn.neo .row{gap:22px}
+.dn.neo .li{border-top-color:#1c1c1c}
+.dn.neo .note{color:#7a7a82}
+.dn.neo .legend{color:#8a8a92;font-size:12.5px;gap:6px 16px}
+.dn.neo .legend b{color:#e8e8ec;font-weight:500}
+.dn.neo .legend i{width:8px;height:8px;border-radius:50%}
+.dn.neo .restday{border-radius:18px;border-color:#262626;background:repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 10px)}
+
+/* ---------- кнопки, переключатели, поля ---------- */
+.dn.neo .pill{border:0;background:none;box-shadow:none;padding:0;gap:8px}
+.dn.neo .pill button{border:1.5px solid #444;border-radius:999px;color:#d6d6da;font-weight:500;padding:6px 14px;background:none}
+.dn.neo .pill button:hover{border-color:#777;color:#fff}
+.dn.neo .pill button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.dn.neo .pill .lbl{border:1.5px solid #444;border-radius:999px;padding:6px 14px}
+.dn.neo .pill .ar{border-radius:50%;width:36px;height:36px;padding:0;display:grid;place-items:center}
+.dn.neo .m-btn{border-radius:999px;background:none;border:1.5px solid #444;padding:9px 18px;color:#f2f2f2}
+.dn.neo .m-btn:hover{border-color:#777;transform:none}
+.dn.neo .m-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.dn.neo .dd-btn{border-radius:999px;background:rgba(14,14,14,.6);border:1.5px solid #333;box-shadow:none}
+.dn.neo .dd-menu,.dn.neo .dd-list{background:#121212!important;border:1.5px solid #2a2a2a!important;border-radius:18px!important;box-shadow:0 24px 60px -20px rgba(0,0,0,.9)!important}
+.dn.neo :is(.sel,select.m-in,.m-in,.search){border-radius:16px;background:rgba(14,14,14,.6);border:1.5px solid #2e2e2e;box-shadow:none}
+.dn.neo .m-in:focus{outline:none;border-color:var(--acc)}
+.dn.neo label.sw{border-radius:16px;background:rgba(255,255,255,.02);border-color:#232323}
+.dn.neo label.sw input:checked+.tr{background:var(--acc)}
+.dn.neo .set-row{border-top-color:#1c1c1c}
+.dn.neo .acc{border-radius:999px;border:1.5px solid #333;background:none}
+.dn.neo .acc[aria-pressed="true"]{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
+.dn.neo .tipb{border-color:#3a3a3a;color:#9a9aa2}
+
+/* метки: полупрозрачные с тонкой обводкой */
+.dn.neo .newtag,.dn.neo .li.isnew b::after{background:rgba(86,197,150,.16)!important;color:#8fdcb8!important;border-radius:999px;text-transform:lowercase;letter-spacing:.02em;font-weight:600;box-shadow:inset 0 0 0 1px rgba(86,197,150,.35)}
+.dn.neo .labtag{background:rgba(79,176,230,.14);color:#9fd2f2;border-radius:999px;text-transform:lowercase;letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(79,176,230,.35)}
+.dn.neo .labtag.rm{background:rgba(224,103,158,.16);color:#f3a9c8;box-shadow:inset 0 0 0 1px rgba(224,103,158,.38)}
+/* предмет в таблицах - белый текст и маленькая цветная точка */
+.dn.neo .t .tag,.dn.neo .tag{background:none;color:#f2f2f2;padding:0;font-weight:500;font-size:14px;gap:10px}
+.dn.neo .tag::before{width:7px;height:7px}
+/* кружки оценок: заметные, число жирное и ровно по центру */
+.dn.neo .mark5{display:inline-grid;place-items:center;line-height:1;font-weight:800;color:#121212;box-shadow:none}
+
+/* ---------- показатели ---------- */
+.dn.neo .kpi .lab{font-weight:500;color:#c9c9ce;font-size:13.5px}
+.dn.neo .kpi .lab svg{color:var(--acc-t)}
+.dn.neo .kpi .val{font-family:var(--fh);font-weight:500;font-size:38px;letter-spacing:0}
+.dn.neo .kpi .val small{font-family:var(--fb);font-size:15px;color:#6d6d75}
+.dn.neo .kpi.att svg.ring2{width:76px;height:76px;filter:drop-shadow(0 0 8px rgba(86,197,150,.22))}
+.dn.neo .kpi.att :is(.sub,.lab){padding-right:84px}
+.dn.neo .meter{height:8px;border-radius:99px;background:#1a1a1a;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.dn.neo .meter i{border-radius:99px;background:linear-gradient(90deg,var(--acc),rgb(var(--acc2-rgb)))!important;box-shadow:0 0 14px -2px rgba(var(--acc-rgb),.7)}
+.dn.neo .seg-bar{height:5px;gap:3px}
+.dn.neo .seg-bar i{border-radius:99px;opacity:.85;background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
+
+/* ---------- приветствие: картина по времени суток ---------- */
+.dn.neo .hero.nh{border-radius:26px;padding:30px 34px;min-height:236px;color:#fff;border:1.5px solid #2a2a2a;isolation:isolate;overflow:hidden}
+.dn.neo .nh-morning{background:linear-gradient(180deg,#2b1a6e 0%,#8a3f9e 45%,#ff7a8f 78%,#ffc58a 100%)}
+.dn.neo .nh-day{background:linear-gradient(180deg,#16307e 0%,#2c5fc4 42%,#5b9ae6 76%,#b9dafa 100%)}
+.dn.neo .nh-evening{background:linear-gradient(180deg,#14092f 0%,#4a1672 40%,#c42f84 72%,#ff8a4c 100%)}
+.dn.neo .nh-night{background:radial-gradient(60% 90% at 78% 30%,#241a66,transparent 70%),linear-gradient(180deg,#04040d 0%,#0b0c28 55%,#1a1446 100%)}
+.dn.neo .nh-stars{position:absolute;inset:0;z-index:0;pointer-events:none;background-size:420px 220px;animation:nhtw 5s ease-in-out infinite;
+  background-image:radial-gradient(1.2px 1.2px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 27% 62%,rgba(255,255,255,.8),transparent),radial-gradient(1.4px 1.4px at 41% 30%,#fff,transparent),radial-gradient(1px 1px at 55% 12%,rgba(255,255,255,.7),transparent),radial-gradient(1.3px 1.3px at 68% 48%,#fff,transparent),radial-gradient(1px 1px at 83% 22%,rgba(255,255,255,.8),transparent),radial-gradient(1.2px 1.2px at 92% 66%,#fff,transparent),radial-gradient(1px 1px at 6% 72%,rgba(255,255,255,.6),transparent),radial-gradient(1.1px 1.1px at 35% 84%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 76% 8%,#fff,transparent)}
+.dn.neo .nh-art{position:absolute;top:0;right:0;bottom:0;left:auto;width:64%;height:100%;z-index:0;pointer-events:none}
+.dn.neo .nh-land{position:absolute;left:0;right:0;bottom:0;width:100%;height:46%;z-index:0;pointer-events:none}
+.dn.neo .nh-scrim{position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,5,8,.8) 0%,rgba(5,5,8,.55) 34%,rgba(5,5,8,.08) 60%,transparent 74%)}
+.dn.neo .hero.nh>*:not(.nh-art):not(.nh-land):not(.nh-scrim):not(.nh-stars){position:relative;z-index:2}
+.dn.neo .hero.nh h2{font-family:var(--fh);font-weight:500;font-size:30px;letter-spacing:.01em;margin:8px 0 6px;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.dn.neo .hero.nh .cap{font-weight:700;letter-spacing:.18em;font-size:11.5px}
+.dn.neo .nh-morning .cap{color:#ffd29a}.dn.neo .nh-day .cap{color:#d8f0ff}.dn.neo .nh-evening .cap{color:#ffb38a}.dn.neo .nh-night .cap{color:#b9a8ff}
+.dn.neo .hero.nh p{opacity:.9;max-width:56ch}
+.dn.neo .hero.nh .photo.lg{width:78px;height:78px;box-shadow:0 0 0 3px rgba(5,5,8,.85),0 0 0 5px var(--ring,var(--acc-t))!important}
+.dn.neo .nh-morning{--ring:#ffb38a}.dn.neo .nh-day{--ring:#b9dafa}.dn.neo .nh-evening{--ring:#ff7aa8}.dn.neo .nh-night{--ring:var(--acc-t)}
+.dn.neo .hero.nh .facts span,.dn.neo .hero.nh .tmk{border:1.5px solid rgba(255,255,255,.22);background:rgba(8,8,12,.38);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff}
+.dn.neo .hero.nh .facts b{color:#fff!important}
+.dn.neo .nh-art .nh-cl{animation:nhcl 40s ease-in-out infinite alternate}
+.dn.neo .nh-art .nh-cl.b{animation-duration:56s;animation-direction:alternate-reverse}
+.dn.neo .nh-art .nh-tw{animation:nhtw 3.4s ease-in-out infinite}
+.dn.neo .nh-art .nh-au{animation:nhau 12s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.dn.neo .nh-art .nh-glow{animation:nhgl 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.dn.neo .nh-art .nh-birds{animation:nhbd 24s ease-in-out infinite alternate}
+.dn.neo .nh-art .nh-shoot{animation:nhsh 9s ease-in infinite;opacity:0}
+@keyframes nhcl{to{translate:40px 0}}
+@keyframes nhtw{50%{opacity:.25}}
+@keyframes nhau{to{opacity:.6;transform:translateY(8px) scaleX(1.08)}}
+@keyframes nhgl{to{transform:scale(1.1);opacity:.8}}
+@keyframes nhbd{to{translate:-50px -12px}}
+@keyframes nhsh{0%,78%{opacity:0;translate:0 0}82%{opacity:1}100%{opacity:0;translate:-220px 110px}}
+@media (prefers-reduced-motion:reduce){.dn.neo .hero.nh *{animation:none!important}}
+/* уведомления над приветствием */
+.dn.neo .notes .card{border-radius:22px}
+.dn.neo .notes .ic{border-radius:50%;background:rgba(var(--acc-rgb),.14);color:var(--acc-t)}
+
+/* ---------- пары: тёмные, предмет - цветной точкой, идущая - обводка тиффани ---------- */
+.dn.neo .lesson{border-radius:18px;background:rgba(255,255,255,.028);border:1px solid #262626;box-shadow:none;color:inherit}
+.dn.neo .lesson .t{font-family:var(--fh);font-weight:400;font-size:14px;color:#f2f2f2;overflow-wrap:normal;hyphens:auto}
+.dn.neo .lesson .t::before{width:7px;height:7px;background:var(--d)}
+.dn.neo .lesson .tt,.dn.neo .lesson .tt b{color:#8a8a92}
+.dn.neo .lesson .tt i{background:#3a3a40}
+.dn.neo .lesson .r{color:#8a8a92;border-top:1px solid #1f1f1f}
+.dn.neo .lesson .room{color:#d9d9de}
+.dn.neo .lesson.past{opacity:.5}
+.dn.neo .lesson.live{border-color:rgba(60,198,192,.55);background:linear-gradient(180deg,rgba(60,198,192,.07),rgba(60,198,192,.02)),rgba(255,255,255,.02);box-shadow:0 0 0 3px rgba(60,198,192,.07),0 18px 40px -26px rgba(60,198,192,.7)}
+.dn.neo .lesson.live .t{color:#fff;font-weight:500}
+.dn.neo .lesson.live::after{background:rgba(60,198,192,.14);color:#8fe3de;box-shadow:inset 0 0 0 1px rgba(60,198,192,.4);border-radius:999px;padding:3px 10px}
+.dn.neo .lesson .p{background:linear-gradient(90deg,rgba(60,198,192,.9),rgba(60,198,192,.2));height:2px}
+.dn.neo .lesson:hover{transform:translateY(-1px);border-color:#3a3a3a}
+.dn.neo .lesson.dim{opacity:.15}
+.dn.neo :is(.tl .tmc,.th) b{font-family:var(--fh);font-weight:500;font-size:14px}
+.dn.neo :is(.tl .tmc,.th) .end{font-family:var(--fh);font-weight:400;font-size:13px;color:#6d6d75}
+.dn.neo :is(.tl .tmc,.th) .cap{color:#6d6d75}
+.dn.neo :is(.tmc,.th) .ln{background:#2a2a2a!important}
+.dn.neo .gap{color:#6d6d75}
+.dn.neo .gap::before,.dn.neo .gap::after{background:#222}
+
+/* ---------- «Домашние задания» на главной - список как «To do» ---------- */
+.dn.neo .td-list{display:flex;flex-direction:column;gap:2px;margin-top:18px}
+.dn.neo .td-row{display:flex;align-items:flex-start;gap:14px;width:calc(100% + 24px);text-align:left;padding:10px 12px;margin:0 -12px;border:0;border-radius:14px;background:none;color:inherit;font:inherit;cursor:pointer;transition:background .15s;box-sizing:border-box}
+.dn.neo .td-row:hover{background:#171717}
+.dn.neo .td-ck{flex:none;width:20px;height:20px;margin-top:1px;border-radius:50%;border:1.5px solid #d9d9de;display:grid;place-items:center;color:#fff}
+.dn.neo .td-ck svg{width:12px;height:12px;stroke-width:3}
+.dn.neo .td-row.late .td-ck{border-color:var(--bad)}
+.dn.neo .td-row.wait .td-ck{border-color:var(--warn);color:var(--warn)}
+.dn.neo .td-row.done .td-ck{border-color:#8a8a92;color:#8a8a92}
+.dn.neo .td-tx{min-width:0;display:flex;flex-direction:column;gap:5px}
+.dn.neo .td-tx b{font-weight:500;font-size:14.5px;color:#f2f2f2;line-height:1.3}
+.dn.neo .td-row.done .td-tx b{color:#6d6d75;text-decoration:line-through}
+.dn.neo .td-tx>span{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12.5px;color:#8a8a92}
+.dn.neo .td-tag{padding:1px 9px;border-radius:999px;font-size:11px;font-weight:600;line-height:1.6}
+.dn.neo .td-tag.g{background:rgba(86,197,150,.16);color:#8fdcb8;box-shadow:inset 0 0 0 1px rgba(86,197,150,.35)}
+.dn.neo .td-tag.y{background:rgba(233,207,122,.14);color:#eedb9c;box-shadow:inset 0 0 0 1px rgba(233,207,122,.35)}
+.dn.neo .td-tag.p{background:rgba(224,103,158,.16);color:#f3a9c8;box-shadow:inset 0 0 0 1px rgba(224,103,158,.38)}
+.dn.neo .td-tag.c{background:rgba(79,176,230,.14);color:#9fd2f2;box-shadow:inset 0 0 0 1px rgba(79,176,230,.35)}
+.dn.neo .td-foot{display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #1c1c1c;font-size:12.5px;color:#8a8a92}
+.dn.neo .td-foot span{display:flex;align-items:center;gap:8px}
+.dn.neo .td-foot svg{width:15px;height:15px;color:#8a8a92}
+.dn.neo .td-foot b{color:#d9d9de;font-weight:500}
+
+/* ---------- лидеры и начисления ---------- */
+.dn.neo .lb .li{border-top:0;border-radius:14px;padding:9px 12px;margin:0 -12px}
+.dn.neo .lb .li:hover{background:#171717}
+.dn.neo .lb .pos{background:none;color:#6d6d75;border-radius:50%}
+.dn.neo .lb .li:nth-child(-n+3) .pos{background:none;color:#f2f2f2}
+.dn.neo .lb .me-row{background:#1b1b1b;margin:0 -12px}
+.dn.neo .lb .me-row .pos{background:var(--acc);color:#fff}
+.dn.neo .lb .me-row b{color:#fff}
+.dn.neo .track{height:6px;border-radius:99px;background:#1a1a1a}
+.dn.neo .track i{border-radius:99px;background:linear-gradient(90deg,#3a3a40,#8a8a94)}
+.dn.neo .lb .me-row .track i{background:linear-gradient(90deg,var(--acc),rgb(var(--acc2-rgb)));box-shadow:0 0 10px -2px rgba(var(--acc-rgb),.8)}
+.dn.neo .li .amt{font-family:var(--fh);font-weight:500}
+
+/* ---------- расписание ---------- */
+.dn.neo .now .subj{font-family:var(--fh);font-weight:500;font-size:26px}
+.dn.neo .now .cd{border-left-color:#262626}
+.dn.neo .now .cd b{font-family:var(--fh);font-weight:500;color:#fff}
+.dn.neo .now .cap{color:var(--acc-t)}
+.dn.neo .now .bar{background:#1c1c1c}.dn.neo .now .bar i{background:linear-gradient(90deg,var(--acc),rgb(var(--acc2-rgb)))}
+.dn.neo .grid .dh{border-color:#1c1c1c}
+.dn.neo .grid .dh .n{font-family:var(--fh);font-weight:500;font-size:14px}
+.dn.neo .grid .dh.today .n{color:var(--acc-t)}
+/* сегодняшний день: тонкая рамка акцента вокруг всей колонки, без заливки */
+.dn.neo .grid .dh.today{box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55),inset 0 1.5px 0 rgba(var(--acc-rgb),.55);border-radius:0;background:linear-gradient(180deg,rgba(var(--acc-rgb),.12),transparent)}
+.dn.neo .grid .dh.today::after{display:none}
+.dn.neo .grid .dh.today .n::after{content:"сегодня";margin-left:8px;padding:2px 8px;border-radius:999px;font:600 10.5px var(--fb);letter-spacing:.04em;vertical-align:2px;background:rgba(var(--acc-rgb),.2);color:var(--acc-t)}
+.dn.neo :is(.cell,.th){border-color:#181818!important}
+.dn.neo .cell.today{background:none;box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55)}
+.dn.neo .hatch{background:repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)}
+.dn.neo .days button{border-radius:18px;border:1.5px solid #333;background:transparent}
+.dn.neo .days button[aria-pressed="true"]{background:var(--acc);color:#fff;border-color:var(--acc)}
+.dn.neo .aday h3{font-family:var(--fh);font-weight:500}
+
+/* ---------- оценки ---------- */
+/* календарь по дням: числа и точки, день с пропуском - число цветом пропуска */
+.dn.neo .cal .c,.dn.neo .cal .c.has,.dn.neo .cal .c.lt,.dn.neo .cal .c.part{background:none;border:0;border-radius:12px;align-items:center;justify-content:center;gap:6px;color:#f2f2f2;padding:6px 2px}
+.dn.neo .cal .c>.num{color:#f2f2f2;font-weight:500;font-size:15px}
+.dn.neo .cal .c.part>.num{color:var(--bad)}
+.dn.neo .cal .c:not(.has):not(.lt):not(.part)>.num{color:#5a5a62}
+.dn.neo .cal .c:hover{background:#171717;filter:none}
+.dn.neo .cal .c .bars{flex:none;gap:3px;justify-content:center}
+.dn.neo .cal .c .bars i{flex:none;width:4px;height:4px;border-radius:50%}
+.dn.neo .cal .c .bars i.u{background:#3a3a3a}.dn.neo .cal .c .bars i.p{box-shadow:none;background:var(--acc-t)}
+/* посещаемость по неделям - полупрозрачные стеклянные столбцы */
+.dn.neo .wkchart2 .wk-pc{font-family:var(--fh);font-weight:400}
+.dn.neo .wkchart2 .tr{border-radius:14px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px #1f1f1f}
+.dn.neo .wkchart2 .tr i{border-radius:14px;opacity:.78;background:linear-gradient(180deg,color-mix(in srgb,var(--z) 85%,#fff),color-mix(in srgb,var(--z) 22%,transparent) 70%,transparent)!important;box-shadow:inset 0 1.5px 0 color-mix(in srgb,var(--z) 70%,#fff)}
+/* средние показатели: только линии - плавные, с мягким свечением своего цвета */
+.dn.neo .avgc .ln{stroke-width:2.6;filter:drop-shadow(0 3px 8px color-mix(in srgb,currentColor 55%,transparent))}
+.dn.neo .avgc .gl{stroke:#1c1c1c}
+.dn.neo .avgc>.legend{display:none}
+.dn.neo .avg-kpis b{font-family:var(--fh);font-weight:500}
+/* таблица по предметам */
+.dn.neo table th{letter-spacing:.01em;text-transform:none;font-size:13.5px;font-weight:500;color:#e6e6ea;border-bottom-color:#1f1f1f!important}
+.dn.neo table td{border-color:transparent!important}
+.dn.neo table tbody tr:hover td{background:#161616}
+.dn.neo table tbody tr:hover td:first-child{border-radius:12px 0 0 12px}.dn.neo table tbody tr:hover td:last-child{border-radius:0 12px 12px 0}
+/* все пары: недели и фильтры в две строки, дни по порядку, карточки на всю ширину */
+.dn.neo .gpairs .hd{margin-bottom:14px}
+.dn.neo .gtabs{gap:8px;margin-bottom:14px}
+.dn.neo .gtabs button{border-radius:14px;border:1.5px solid #333;background:none;padding:6px 14px;align-items:flex-start}
+.dn.neo .gtabs button b{font-weight:600;font-size:12.5px;color:#e6e6ea}
+.dn.neo .gtabs button small{color:#6d6d75}
+.dn.neo .gtabs button[aria-pressed=true]{background:var(--acc);border-color:var(--acc)}
+.dn.neo .gtabs button[aria-pressed=true] :is(b,small){color:#fff}
+.dn.neo .gfbar{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;padding:12px 0;border-top:1px solid #1c1c1c;border-bottom:1px solid #1c1c1c}
+.dn.neo .gfbar .gleg{margin:0}
+.dn.neo .gflt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dn.neo .gsum{margin:14px 0 4px;font-size:12.5px;color:#8a8a92}
+.dn.neo .gsum b{color:#f2f2f2;font-weight:600}
+.dn.neo .gday{grid-template-columns:88px minmax(0,1fr);gap:14px;padding:10px 0;border-top:1px solid #161616}
+.dn.neo .gday:first-child{border-top:0}
+.dn.neo .gday h4{font-family:var(--fh);font-weight:500;font-size:15px;color:#f2f2f2}
+.dn.neo .gday h4 span{font-family:var(--fb);font-size:12px;color:#6d6d75;margin-top:2px}
+.dn.neo .gday.td h4{color:var(--acc-t)}
+.dn.neo .grow2{grid-template-columns:repeat(var(--slots),minmax(0,1fr));gap:10px}
+.dn.neo .pc2{height:60px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid #242424;box-shadow:none;padding:0 12px 0 16px}
+.dn.neo .pc2:hover{border-color:#3a3a3a;transform:translateY(-1px)}
+.dn.neo .pc2 .pn{color:#6d6d75;font-size:11px}
+.dn.neo .pc2 .ps{font-size:14px;color:#f2f2f2}
+.dn.neo .pc2.x::before,.dn.neo .pc2.l::before{width:4px;border-radius:0 3px 3px 0;top:10px;bottom:10px}
+.dn.neo .pc2.x{background:linear-gradient(90deg,rgba(224,103,158,.1),rgba(255,255,255,.02) 55%)}
+.dn.neo .pc2.l{background:linear-gradient(90deg,rgba(233,207,122,.09),rgba(255,255,255,.02) 55%)}
+.dn.neo .pc2.isnew{border-color:var(--acc);box-shadow:none}
+.dn.neo .pc2 .pm{gap:6px}
+.dn.neo .pc2 .pm .mark5{width:30px;height:30px;font-size:14px;box-shadow:0 0 0 2px #0e0e0e}
+.dn.neo .gdots i.on{background:var(--acc)}
+.dn.neo .les{border-radius:14px;background:rgba(255,255,255,.03);border-color:#242424}
+/* цели: трубка с переходом акцент → второй цвет */
+.dn.neo .gbar{height:8px;background:#1a1a1a;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.dn.neo .gbar i{background:linear-gradient(90deg,var(--acc),rgb(var(--acc2-rgb)));box-shadow:0 0 14px -2px rgba(var(--acc-rgb),.7)}
+.dn.neo .gbar em{background:#fff}
+
+/* ---------- домашние задания ---------- */
+.dn.neo article.hw .top2>div>b{display:block;font-family:var(--fh);font-weight:400;font-size:15px;margin-bottom:6px}
+.dn.neo article.hw .labtag,.dn.neo article.hw .newtag{display:inline-block;margin:2px 4px 2px 0}
+.dn.neo article.hw.isnew{border-color:var(--acc);box-shadow:none}
+.dn.neo .hw .submit{border-radius:999px;background:var(--acc);color:#fff}
+.dn.neo .hw .wait{border-color:#3a3a3a}
+.dn.neo .hint{border-radius:22px}
+
+/* ---------- материалы, разделы журнала, профиль ---------- */
+.dn.neo .m-hero b{font-family:var(--fh);font-weight:500}
+.dn.neo .m-ic,.dn.neo .ver .ver-ic{border-radius:50%;background:transparent;color:#f2f2f2;box-shadow:inset 0 0 0 1.5px #333}
+.dn.neo .mat .cnt{font-family:var(--fh);font-weight:400}
+.dn.neo .mat>svg{color:var(--acc-t)}
+.dn.neo .m-kv{border-top-color:#1c1c1c}
+.dn.neo .hero.prof{color:#fff}
+.dn.neo .hero.prof h2{font-family:var(--fh);font-weight:500}
+.dn.neo .hero.prof .cap{color:var(--acc-t)}
+.dn.neo .hero.prof .facts span{border:1.5px solid #333;background:none}
+.dn.neo .photo.xl{box-shadow:0 0 0 3px #0e0e0e,0 0 0 5px var(--acc)}
+.dn.neo .qa{border-top-color:#1c1c1c}
+.dn.neo .qa summary{font-weight:500}
+.dn.neo .qa[open] summary svg{color:var(--acc-t)}
+.dn.neo .ver .grow b{font-family:var(--fh);font-weight:500}
+.dn.neo .ver .cap{color:var(--acc-t)}
+.dn.neo .ver .ver-new{border-top-color:#1c1c1c}
+.dn.neo .rv{border-radius:22px}
+.dn.neo .nw{border-radius:14px}
+/* достижения и награды */
+.dn.neo .ach .a{border-radius:20px;background:rgba(255,255,255,.025);border:1px solid #232323}
+.dn.neo .ach .a .ic{border-radius:50%}
+
+/* ---------- окна ---------- */
+.dn.neo dialog{background:#0f0f0f;border:1.5px solid #2a2a2a;border-radius:26px;box-shadow:0 40px 120px -30px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.02)}
+.dn.neo dialog::backdrop{background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.dn.neo .dlg .dh2{background:radial-gradient(80% 140% at 0% 0%,color-mix(in srgb,var(--d,var(--acc)) 22%,transparent),transparent 70%)}
+.dn.neo .dlg .dh2 h3{font-family:var(--fh);font-weight:500;color:#fff}
+.dn.neo .dlg .x{border-radius:50%;border:1.5px solid #333;background:none;color:#e6e6ea}
+.dn.neo .dlg dd{font-weight:500}
+.dn.neo .toast{background:rgba(21,21,21,.96);color:#fff;border:1.5px solid #2a2a2a;border-radius:18px;max-width:min(420px,calc(100vw - 32px));white-space:pre-line;text-align:center;line-height:1.4;font-weight:500}
+
+/* ---------- крипта ---------- */
+.dn.neo .mkt{--gold:var(--acc-t)}
+.dn.neo .mk-main,.dn.neo .mk-list,.dn.neo .mk-fg{background:rgba(255,255,255,.025);border:1px solid #232323;border-radius:20px}
+.dn.neo .mk-badge{border-radius:50%;background:rgba(var(--acc-rgb),.16);color:var(--acc-t)}
+.dn.neo .mk-tt h2,.dn.neo .mk-big,.dn.neo .mks-price>b{font-family:var(--fh);font-weight:500}
+.dn.neo .mk-lbl{color:var(--acc-t)}
+.dn.neo .mk-row+.mk-row{box-shadow:0 -1px 0 #1c1c1c}
+.dn.neo .mk-row:hover{background:#171717}
+.dn.neo .mk-x{border-radius:50%;border:1.5px solid #333;background:none}
+.dn.neo .mk-src,.dn.neo .mk-stats>div:not(.mk-sfoot),.dn.neo .mks-grid>div{background:rgba(255,255,255,.02);border-color:#232323}
+.dn.neo .mkt::before{background:radial-gradient(circle,rgba(var(--acc-rgb),.18),transparent 65%)}
+.dn.neo .pressing{box-shadow:0 0 0 2px rgba(var(--acc-rgb),.55)}
+
+/* ---------- экран входа: та же картина времени суток на весь экран, форма - тёмное стекло ---------- */
+.dn.neo.lgn .lg-bg{overflow:hidden}
+.dn.neo.lgn .lg-bg .nh-art{width:100%}
+.dn.neo.lgn .lg-bg .nh-land{height:34%}
+.dn.neo.lgn .lg-bg .nh-scrim{background:radial-gradient(60% 70% at 50% 50%,rgba(0,0,0,.55),transparent 80%)}
+.dn.neo.lgn .lg-card{background:rgba(12,12,12,.72);border:1.5px solid rgba(255,255,255,.14);border-radius:30px;-webkit-backdrop-filter:blur(30px) saturate(130%);backdrop-filter:blur(30px) saturate(130%);box-shadow:0 40px 120px -30px rgba(0,0,0,.9)}
+.dn.neo.lgn .lg-card h1{font-family:var(--fh);font-weight:500;letter-spacing:.01em}
+.dn.neo.lgn .lg-brand b{font-family:var(--fh);font-weight:500}
+.dn.neo.lgn .lg-brand .mark{border-radius:50%;background:#0c0c0c;color:var(--acc-t);border:1.5px solid #2e2e2e}
+.dn.neo.lgn .lg-pw input,.dn.neo.lgn input{border-radius:16px;background:rgba(0,0,0,.45);border:1.5px solid #2e2e2e}
+.dn.neo.lgn input:focus{border-color:var(--acc);outline:none}
+.dn.neo.lgn .lg-go{background:var(--acc)!important;color:#fff;border-radius:999px}
+.dn.neo.lgn a,.dn.neo.lgn .lg-links button{color:var(--acc-t)}
+
+/* ---------- узкие экраны ---------- */
+@media (max-width:980px){
+  .dn.neo .app{grid-template-columns:minmax(0,1fr)}
+  .dn.neo .side{border-right:0;border-bottom:1px solid #1c1c1c;padding:14px 12px 10px}
+  .dn.neo .nav a{font-size:13.5px;padding:8px 12px;border-radius:999px}
+  .dn.neo .nav a[aria-current="page"]{box-shadow:inset 0 0 0 1.5px var(--acc)}
+  .dn.neo :is(.card,.gridwrap,.now,article.hw,.aday){-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+}
+@media (max-width:760px){
+  .dn.neo .gday{grid-template-columns:1fr;gap:8px}
+  .dn.neo .grow2{grid-template-columns:1fr}
+  .dn.neo .gfbar{flex-direction:column;align-items:flex-start}
+}
+@media (max-width:640px){
+  .dn.neo .main{padding:0 12px 40px}
+  .dn.neo .top h1{font-size:23px}
+  .dn.neo .card{border-radius:24px;padding:18px}
+  /* приветствие на телефоне: картина сзади справа, текст поверх, без пустого места сверху */
+  .dn.neo .hero.nh{padding:22px 20px;border-radius:24px;min-height:0}
+  .dn.neo .nh-art{width:78%;opacity:.9}
+  .dn.neo .nh-land{height:30%}
+  .dn.neo .nh-scrim{background:linear-gradient(90deg,rgba(5,5,8,.82) 0%,rgba(5,5,8,.6) 55%,rgba(5,5,8,.25) 100%),linear-gradient(0deg,rgba(5,5,8,.6),transparent 60%)}
+  .dn.neo .hero.nh h2{font-size:24px}
+  .dn.neo .hero.nh .photo.lg{width:58px;height:58px}
+  .dn.neo .kpi .val{font-size:30px}
+}
+/* длинное меню на невысоких экранах - мягко растворяется у нижнего края, видно что его можно прокрутить */
+@media (min-width:981px){.dn.neo .nav{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 28px),transparent)}
+  .dn.neo .nav a{padding:8px 12px}}
+
+/* ===== 4.3.1 ===== */
+/* верхняя строка во всю ширину колонки - при любом масштабе без «коробки» */
+.dn.neo .top{margin:0 -34px;padding:28px 34px 20px;max-width:none}
+.dn.neo .top>div:first-child{min-width:0;flex:1}
+.dn.neo .top h1{overflow:hidden;text-overflow:ellipsis}
+.dn.neo .top .tools{flex:none}
+/* подписи последних значений на графике - с тёмной подложкой, линия под ними не мешает */
+.dn.neo .avgc .vl{paint-order:stroke;stroke:#0e0e0e;stroke-width:5px;stroke-linejoin:round;font-weight:700}
+/* «Сегодня» на главной: низ карточки - итог дня и следующий учебный день */
+.dn.neo .r-7-5>.card:first-child{display:flex;flex-direction:column}
+.dn.neo .dfoot{margin-top:auto;padding-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.dn.neo .dfoot>*{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;border:1px solid #232323;background:rgba(255,255,255,.02);color:inherit;font:inherit;text-align:left}
+.dn.neo .dfoot>button{cursor:pointer;transition:border-color .15s}.dn.neo .dfoot>button:hover{border-color:rgba(var(--acc-rgb),.6)}
+.dn.neo .dfoot>*>span{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(var(--acc-rgb),.14);color:var(--acc-t)}
+.dn.neo .dfoot>*>span svg{width:18px;height:18px}
+.dn.neo .dfoot b{display:block;font-weight:600;font-size:14px;color:#f2f2f2}
+.dn.neo .dfoot small{display:block;font-size:12.5px;color:#8a8a92;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dn.neo .dfoot>*>div{min-width:0}
+/* последние начисления: строк столько, сколько влезает рядом с таблицей лидеров, итог монет прижат к низу */
+.dn.neo .r2>.card:has(.feedfit){display:flex;flex-direction:column}
+.dn.neo .feedfit{flex:1;position:relative;min-height:240px}
+.dn.neo .feedfit>.list{position:absolute;inset:0;overflow:hidden}
+.dn.neo .feedfit+.legend{margin-top:0!important}
+@media (max-width:760px){.dn.neo .feedfit{min-height:0}.dn.neo .feedfit>.list{position:static}}
+/* расписание на телефоне: сегодняшний день - рамка акцента и метка */
+.dn.neo .aday.today{border-color:rgba(var(--acc-rgb),.6);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.08),0 20px 50px -30px rgba(var(--acc-rgb),.8)}
+.dn.neo .aday.today h3{color:var(--acc-t)}
+.dn.neo .aday.today h3::before{content:"Сегодня";order:-1;flex-basis:100%;font:600 11px var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-t);opacity:.85}
+.dn.neo .aday h3{border-bottom-color:#1c1c1c}
+/* выходные: мягкая штриховка, уходящая в прозрачность, и аккуратная метка */
+.dn.neo .hatch{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 70%),repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 1px,transparent 1px 12px)!important;border-radius:16px;margin:6px}
+.dn.neo .hatch span{background:#0e0e0e;border:1px solid #262626;color:#8a8a92;font-size:12px;letter-spacing:.06em;padding:8px 6px}
+.dn.neo .hatch.wk{background:radial-gradient(80% 50% at 50% 50%,rgba(var(--acc-rgb),.08),transparent 75%),repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 1px,transparent 1px 12px)!important}
+/* все пары - весь месяц: недели одна под другой */
+.dn.neo .gmonth{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.dn.neo .gwk-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:6px 0 8px;border-bottom:1px solid #1c1c1c;margin-bottom:4px}
+.dn.neo .gwk-h>b{font-family:var(--fh);font-weight:500;font-size:14px;color:var(--acc-t)}
+.dn.neo .gwk-h span{font-size:12.5px;color:#8a8a92}.dn.neo .gwk-h span b{color:#f2f2f2;font-weight:600}
+/* итоги месяца - тёмное стекло, кольца и свет цвета акцента */
+.dn.neo .sum{background:radial-gradient(120% 60% at 100% 0%,rgba(var(--acc-rgb),.45),transparent 60%),radial-gradient(90% 50% at 0% 100%,rgba(var(--acc2-rgb),.18),transparent 70%),#0c0c0c;border:1.5px solid #2a2a2a;border-radius:28px;color:#f2f2f2}
+.dn.neo .sum .orn{filter:none}
+.dn.neo .sum .orn circle[r="60"],.dn.neo .sum .orn g[stroke]{stroke:var(--acc-t)}
+.dn.neo .sum .orn rect{display:none}
+.dn.neo .sum .orn path{fill:var(--acc)}
+.dn.neo .sum .cap{color:var(--acc-t);font-weight:700;letter-spacing:.16em}
+.dn.neo .sum h3{font-family:var(--fh);font-weight:500;letter-spacing:0}
+.dn.neo .sum .grad{background:linear-gradient(90deg,var(--acc-t),rgb(var(--acc2-rgb)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.dn.neo .sum .hero-n b{font-family:var(--fh);font-weight:500}
+.dn.neo .sum .hero-n em{color:var(--good)}
+.dn.neo .sum .st{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px}
+.dn.neo .sum .st>b{font-family:var(--fh);font-weight:500}
+.dn.neo .sum .st .em svg{color:var(--acc-t)}
+.dn.neo .sum .heat i{border-radius:8px}
+.dn.neo .sum .heat i.l,.dn.neo .sum .hl i.l{background:color-mix(in srgb,var(--late) 85%,transparent)}
+.dn.neo .sum .x{border-radius:50%;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.2)}
+.dn.neo .sum-nav button{border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.dn.neo .sum-dl{border-radius:999px;background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.dn.neo .sum-dl:hover{filter:brightness(1.1);background:var(--acc)}
+/* телефон и планшет: без размытия под карточками - не дрожит при прокрутке в Safari и не тратит заряд */
+@media (hover:none),(max-width:980px){
+  .dn.neo :is(.card,.gridwrap,.now,.m-hero,.hero.prof,.aday,article.hw,.top){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .dn.neo :is(.card,.gridwrap,.now,.m-hero,.hero.prof,.aday,article.hw){background:radial-gradient(90% 60% at 50% 0%,rgba(255,255,255,.03),transparent 70%),rgba(16,16,16,.9)}
+  .dn.neo .top{background:linear-gradient(180deg,rgba(0,0,0,.92),rgba(0,0,0,.78))}
+  .dn.neo .hero.nh :is(.facts span,.tmk){-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,8,12,.6)}
+}
+@media (max-width:640px){
+  .dn.neo .top{margin:0;padding:16px 0 12px!important;gap:10px}
+  .dn.neo .top h1{font-size:22px}
+  .dn.neo .iconbtn,.dn.neo .top-ava .photo{width:40px;height:40px}
+  .dn.neo .tools{gap:6px}
+  .dn.neo .dfoot{grid-template-columns:1fr}
+}
+
+/* ===== 4.3.2 ===== */
+.dn.neo .cell.today.lr{box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55),inset 0 -1.5px 0 rgba(var(--acc-rgb),.55)}
+.dn.neo .hatch span{background:none;border:0;color:#5a5a62;letter-spacing:.2em;text-transform:uppercase;font-size:11px;font-weight:600}
+/* все пары по неделям: пунктирная заглушка, где пары не было */
+.dn.neo .pc0{grid-column:var(--col);height:60px;border-radius:16px;border:1.5px dashed #262626;display:flex;flex-direction:column;justify-content:center;padding:0 16px;font-size:12.5px;color:#55555d}
+.dn.neo .pc0 span{font-size:11px;color:#45454c;margin-bottom:2px}
+.dn.neo .gpager{transition:none}
+@media (max-width:760px){.dn.neo .pc0{grid-column:auto;height:44px;flex-direction:row;align-items:center;gap:8px}}
+/* все пары за месяц: каждый день - рамка с датой, внутри пары; свежие сверху */
+.dn.neo .mtiles{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;align-items:stretch}
+.dn.neo .mt-wk{flex-basis:100%;display:flex;align-items:center;gap:12px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:#6d6d75;margin-top:6px}
+.dn.neo .mt-wk:first-child{margin-top:0}
+.dn.neo .mt-wk::after{content:"";flex:1;height:1px;background:#1f1f1f}
+.dn.neo .mt-wk b{font-weight:600}
+.dn.neo .mday{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:20px;border:1px solid #1f1f1f;background:rgba(255,255,255,.015)}
+.dn.neo .mday.td{border-color:rgba(var(--acc-rgb),.5);background:rgba(var(--acc-rgb),.05)}
+.dn.neo .mday-h{display:flex;align-items:baseline;gap:6px;padding:0 4px;flex-wrap:wrap}
+.dn.neo .mday-h b{font-family:var(--fh);font-weight:500;font-size:13.5px;color:#f2f2f2}
+.dn.neo .mday-h span{font-size:12px;color:#8a8a92}
+.dn.neo .mday-h small{margin-left:auto;font-size:11.5px;color:#6d6d75}
+.dn.neo .mday.td .mday-h b{color:var(--acc-t)}
+.dn.neo .mday-l{display:flex;gap:6px}
+.dn.neo .mt{position:relative;width:88px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 6px 10px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid #262626;color:inherit;font:inherit;cursor:pointer;transition:border-color .15s,transform .15s,opacity .2s}
+.dn.neo .mt:hover{border-color:#3a3a3a;transform:translateY(-1px)}
+.dn.neo .mt-t{font-size:10.5px;color:#6d6d75}
+.dn.neo .mt>b{font-family:var(--fh);font-weight:500;font-size:20px;line-height:1.1;color:#f2f2f2}
+.dn.neo .mt-s{max-width:100%;display:flex;align-items:center;gap:4px;font-size:10.5px;color:#9a9aa2;white-space:nowrap;overflow:hidden}
+.dn.neo .mt-s>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dn.neo .mt-s i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--d)}
+.dn.neo .mt-m{display:flex;gap:3px;margin-top:auto;min-height:22px;align-items:center}
+.dn.neo .mt-m .mark5{width:22px;height:22px;font-size:12px}
+.dn.neo .mt-0{width:14px;height:2px;border-radius:2px;background:#2e2e2e}
+/* пропуск / опоздание - не кружок, а метка в углу плитки */
+.dn.neo .mt .st{position:absolute;top:6px;right:6px;font-style:normal;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:800;line-height:1.5}
+.dn.neo .mt .st.x{background:rgba(224,103,158,.2);color:#f3a9c8}
+.dn.neo .mt .st.l{background:rgba(233,207,122,.18);color:#eedb9c}
+.dn.neo .mt.x{border-color:rgba(224,103,158,.5);background:linear-gradient(180deg,rgba(224,103,158,.09),rgba(255,255,255,.02))}
+.dn.neo .mt.x>b{color:#f3a9c8}
+.dn.neo .mt.l{border-color:rgba(233,207,122,.45)}
+.dn.neo .mt.isnew{box-shadow:0 0 0 1.5px var(--acc)}
+.dn.neo .mt.dim{opacity:.18}
+/* телефон: каждый день - на всю ширину, пары растягиваются (до 5 в ряд), 4-5 пар помещаются без тесноты */
+@media (max-width:640px){
+  .dn.neo .mtiles{flex-direction:column;flex-wrap:nowrap;gap:10px}
+  .dn.neo .mday{padding:10px}
+  .dn.neo .mday-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px}
+  .dn.neo .mt{width:auto;padding:8px 4px 9px}
+  .dn.neo .mt>b{font-size:18px}
+  .dn.neo .mt-s{font-size:10px}
+  .dn.neo .mt .st{top:4px;right:4px;padding:0 5px}
+  .dn.neo .mt-m .mark5{width:20px;height:20px;font-size:11px}
+}
+/* календарь по дням: стрелки месяцев */
+.dn.neo .calnav{display:flex;gap:6px}
+.dn.neo .hc-ar{width:32px;height:32px;border-radius:50%;border:1.5px solid #333;background:none;color:#e6e6ea;font-size:17px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.dn.neo .hc-ar:hover:not(:disabled){border-color:var(--acc)}
+.dn.neo .hc-ar:disabled{opacity:.3;cursor:default}
+
+/* ===== 4.3.3 ===== */
+@media (max-width:760px){.dn.neo .pc0{height:42px;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:0 16px}.dn.neo .pc0 span{margin:0}}
+.dn.neo :is(.card,.gridwrap):has(.dd.open){z-index:40;position:relative}
+.dn.neo .goals .goal .hd .dd-list,.dn.neo .hd .dd:last-child .dd-list{left:auto;right:0}
+.dn.neo .dd-list{background:#121212;border:1.5px solid #2a2a2a;border-radius:18px;box-shadow:0 24px 60px -20px rgba(0,0,0,.95);padding:6px}
+.dn.neo .gin{border:1.5px solid #333;background:none}
+.dn.neo .gin:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.18)}
+.dn.neo .gin input:focus,.dn.neo .gin input:focus-visible{box-shadow:none!important;outline:none!important}
+.dn.neo .gopt button:focus-visible{box-shadow:0 0 0 2px var(--acc);border-radius:999px}
+.dn.neo .hw .hwact .submit,.dn.neo .hw .hwact .submit svg,.dn.neo .m-btn.pri svg{color:#fff}
+.dn.neo .gpager{align-items:flex-start}
+
+/* ===== 4.3.5 ===== */
+/* пары без отметки в журнале (есть в расписании) - пунктир, номер прочерком */
+.dn.neo .mt.u{border:1.5px dashed #2e2e2e;background:none;cursor:default}
+.dn.neo .mt.u>b{color:#45454c}.dn.neo .mt.u .mt-s{color:#6d6d75}
+.dn.neo .mt-nm{font-size:9.5px;color:#55555d;white-space:nowrap}
+.dn.neo .pc0.u{border-color:#2e2e2e;color:#8a8a92}.dn.neo .pc0.u b{color:#d6d6da;font-weight:500}
+.dn.neo .pc0.u span{color:#6d6d75}
+/* Н/О: на ПК - метка в углу, на телефоне - на месте оценки */
+.dn.neo .mt .st2{display:none;min-width:22px;height:22px;border-radius:50%;place-items:center;font-size:11px;font-weight:800}
+.dn.neo .mt .st2.x{background:rgba(224,103,158,.18);color:#f3a9c8;box-shadow:inset 0 0 0 1px rgba(224,103,158,.45)}
+.dn.neo .mt .st2.l{background:rgba(233,207,122,.16);color:#eedb9c;box-shadow:inset 0 0 0 1px rgba(233,207,122,.45)}
+@media (max-width:640px){.dn.neo .mt em.st{display:none}.dn.neo .mt .st2{display:inline-grid;width:20px;height:20px;min-width:20px}}
+/* календарь по дням: дни впереди - серые точки */
+.dn.neo .cal .c .bars i.p{background:#3a3a3a}
+/* время пары: конец - всегда серый и тоньше, и в неделе, и в дне, и на телефоне */
+.dn.neo :is(.tmc,.th) b{font-family:var(--fh);font-weight:500;color:#f2f2f2}
+.dn.neo :is(.tmc,.th) .end{font-family:var(--fh);font-weight:400;color:#6d6d75!important}
+/* кольцо аватарки в приветствии - цвет акцента */
+.dn.neo .hero.nh .photo.lg{box-shadow:0 0 0 3px rgba(5,5,8,.85),0 0 0 5px var(--acc-t)!important}
+/* текст в крипте и окнах не выделяется случайно при нажатии */
+.dn.neo :is(.mkt,.mks,.dlg .dh2){-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dn.neo .mks .mk-chart{touch-action:none}
+/* итоги месяца на телефоне - всё внутри экрана */
+.dn.neo .sum .stat{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dn.neo .sum .st{min-width:0;overflow-wrap:anywhere}
+.dn.neo .sum .heat{grid-template-columns:repeat(7,minmax(0,1fr));max-width:280px}
+@media (max-width:560px){#dlg.sumd{max-width:calc(100vw - 16px)!important}.dn.neo .sum{padding:20px 16px 16px}.dn.neo .sum h3{font-size:28px}.dn.neo .sum .hero-n b{font-size:46px}.dn.neo .sum .st>b{font-size:22px}.dn.neo .sum .st>b.sm{font-size:15px}}
+/* меню на телефоне: тонкие разделители между разделами */
+@media (max-width:980px){.dn.neo .ngrp{display:block!important;flex:none;align-self:center;width:1px;height:22px;padding:0!important;margin:0 8px!important;border:0!important;background:#2e2e2e;font-size:0;overflow:hidden}
+  .dn.neo .ngrp:first-child{display:none!important}}
+
+/* ===== 4.3.6 ===== */
+.dn.neo{--m-hw:#f2873a;--hw:#f2873a}
+.dn.neo .ghint{display:block;margin:14px 0 0;font-size:13px;color:#8a8a92}.dn.neo .ghint b{color:#f2f2f2}
+.dn.neo .sum .st{overflow-wrap:normal}
+.dn.neo .sum .st>b{flex-wrap:wrap;column-gap:8px;row-gap:2px}
+@media (max-width:560px){.dn.neo .sum .st>b{font-size:20px}}
+
+/* верхняя строка без жёсткой границы: затемнение и размытие плавно сходят на нет */
+.dn.neo .top{background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0))!important;-webkit-mask-image:linear-gradient(180deg,#000 60%,transparent);mask-image:linear-gradient(180deg,#000 60%,transparent)}
+@media (hover:none),(max-width:980px){.dn.neo .top{-webkit-mask-image:none;mask-image:none}}
+
+/* луч света: диагональная полоса от верхнего левого края, плавно гаснет книзу - без резких краёв */
+.dn.neo .main{isolation:isolate}
+.dn.neo .main::before{content:"";position:absolute;left:0;right:0;top:0;height:1100px;z-index:-1;pointer-events:none;
+  background:linear-gradient(112deg,transparent 30%,rgba(var(--acc-rgb),.09) 42%,rgba(var(--acc2-rgb),.07) 50%,transparent 62%),linear-gradient(112deg,transparent 55%,rgba(var(--acc-rgb),.05) 62%,transparent 70%);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 45%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 45%,transparent 100%);filter:blur(10px)}
+/* 4.4.1: ничего не вылезает за карточки на узких экранах */
+.dn.neo .dfoot>*{min-width:0;overflow:hidden}
+.dn.neo .card,.dn.neo .card>*{min-width:0}
+.dn.neo .hero-id{min-width:0}.dn.neo .hero-id>div:not(.photo){min-width:0;flex:1}
+.dn.neo .hero.prof :is(h2,.cap){overflow-wrap:break-word}
+.dn.neo .hero .facts{min-width:0}.dn.neo .hero .facts span{max-width:100%}
+
+/* 4.4.2: телефон - аккуратные переносы */
+.dn.neo table td,.dn.neo table th{overflow-wrap:normal;word-break:normal}
+.dn.neo table .num{white-space:nowrap}
+.dn.neo .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:640px){
+  .dn.neo .tscroll table{font-size:13px}.dn.neo .tscroll table :is(td,th){padding-left:6px!important;padding-right:6px!important}
+  .dn.neo .tscroll table td:first-child,.dn.neo .tscroll table th:first-child{padding-left:0!important}
+  .dn.neo .tscroll .tag{white-space:normal;line-height:1.25}
+  /* личный кабинет: аватар сверху, всё по центру */
+  .dn.neo .hero.prof .hero-id{flex-direction:column;text-align:center;gap:14px}
+  .dn.neo .hero.prof h2{font-size:24px;line-height:1.15}
+  .dn.neo .hero.prof .facts{justify-content:center}
+  /* подсказки: заголовок, текст, кнопка - столбиком по центру */
+  .dn.neo .hint{flex-direction:column;align-items:center;text-align:center;gap:10px}
+  .dn.neo .hint>div{min-width:0;width:100%}
+  .dn.neo .hint .m-btn{align-self:center}
+  .dn.neo .m-kv{grid-template-columns:110px minmax(0,1fr)}
+}
+@media (max-width:640px){.dn.neo .m-t td:first-child,.dn.neo .m-t td:last-child,.dn.neo .m-t th{white-space:nowrap}.dn.neo .m-t td:nth-child(2){min-width:140px}}
+.dn.neo th .sh{display:none}@media (max-width:640px){.dn.neo th .lg{display:none}.dn.neo th .sh{display:inline}}
+
+/* 4.4.4: уведомления в две колонки, кнопки по центру; конфетти справа от текста */
+.dn.neo .notes{grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.dn.neo .notes>.card:last-child:nth-child(odd):not(:first-child){grid-column:1/-1}
+.dn.neo .notes>.card{align-items:center}
+.dn.neo .notes>.card>*{align-self:center;margin-block:0}
+.dn.neo .bd-conf{left:auto;right:0;width:36%}
+.dn.neo .bd-tx{max-width:62%}
+@media (max-width:560px){.dn.neo .bd-conf{width:48%;height:46%;opacity:.6}.dn.neo .bd-tx{max-width:none}}
+
+/* 4.4.5: счётчики в меню не обрезаются; «новое» справа от названия */
+.dn.neo .nav a>span:not(.bd):not(.nd){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.015em}
+.dn.neo .nav a :is(.bd,.nd){flex:none;min-width:20px;padding:0 5px;width:auto;margin-left:4px}
+.dn.neo .rv{position:relative}
+.dn.neo .rv>.newtag{position:absolute;top:16px;right:16px;margin:0}
+.dn.neo .rv.isnew{border-color:var(--acc)!important;box-shadow:none!important}
+.dn.neo article.hw .top2 b{display:inline}
+.dn.neo article.hw .top2 .newtag{margin:0 0 0 6px;vertical-align:2px}
+@media (min-width:981px){.dn.neo .side{padding-inline:14px}.dn.neo .nav a{padding-inline:10px;gap:10px}}
+
+/* лёгкая графика: без размытия под стеклом и фоновых анимаций */
+:host([data-lite]) .dn *,:host([data-lite]) .dn *::before,:host([data-lite]) .dn *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+:host([data-lite]) .dn.neo :is(.card,.gridwrap,.now,article.hw,.aday){background-color:#121212}
+:host([data-lite]) .dn.neo .top{background:#080808}
+:host([data-lite]) .dn .hero.nh *,:host([data-lite]) .dn .bd-conf *{animation:none!important}
+:host([data-lite]) .dn dialog::backdrop{background:rgba(0,0,0,.82)}
+
+/* топкоины и топгемы - значками как в журнале (вид по умолчанию) */
+.dn:not([data-mc=true]) .coin,.dn:not([data-mc=true]) .gem{border-radius:0;box-shadow:none;clip-path:none;background:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI0ZGQjU0NyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM5IiBmaWxsPSIjRkY5NTAwIi8+PGcgZmlsbD0iI0ZGQzQ2QiI+PHBhdGggZD0iTTQyIDIyaDE0djM1YzAgNCAyIDYgNiA2aDZ2MTJoLTljLTExIDAtMTctNi0xNy0xN3oiLz48cmVjdCB4PSIzMiIgeT0iMzYiIHdpZHRoPSIzNCIgaGVpZ2h0PSIxMiIgcng9IjQiLz48L2c+PC9zdmc+) center/contain no-repeat}
+.dn:not([data-mc=true]) .gem{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBCM0YwQiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQyIiBmaWxsPSIjMkE3QTAwIi8+PHBvbHlnb24gcG9pbnRzPSI1MC4wLDI5LjAgNTAuMCw4LjAgODIuOCwyMy44IDY2LjQsMzYuOSIgZmlsbD0iIzdDQzgwMCIvPjxwb2x5Z29uIHBvaW50cz0iNjYuNCwzNi45IDgyLjgsMjMuOCA5MC45LDU5LjMgNzAuNSw1NC43IiBmaWxsPSIjNUVBRDAwIi8+PHBvbHlnb24gcG9pbnRzPSI3MC41LDU0LjcgOTAuOSw1OS4zIDY4LjIsODcuOCA1OS4xLDY4LjkiIGZpbGw9IiMzRTkyMDAiLz48cG9seWdvbiBwb2ludHM9IjU5LjEsNjguOSA2OC4yLDg3LjggMzEuOCw4Ny44IDQwLjksNjguOSIgZmlsbD0iIzJBN0EwMCIvPjxwb2x5Z29uIHBvaW50cz0iNDAuOSw2OC45IDMxLjgsODcuOCA5LjEsNTkuMyAyOS41LDU0LjciIGZpbGw9IiMxRjZCMDAiLz48cG9seWdvbiBwb2ludHM9IjI5LjUsNTQuNyA5LjEsNTkuMyAxNy4yLDIzLjggMzMuNiwzNi45IiBmaWxsPSIjM0U5MjAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMy42LDM2LjkgMTcuMiwyMy44IDUwLjAsOC4wIDUwLjAsMjkuMCIgZmlsbD0iIzZCQkEwMCIvPjxwb2x5Z29uIHBvaW50cz0iNTAuMCwyOS4wIDY2LjQsMzYuOSA3MC41LDU0LjcgNTkuMSw2OC45IDQwLjksNjguOSAyOS41LDU0LjcgMzMuNiwzNi45IiBmaWxsPSIjOTRFMDAwIi8+PC9zdmc+)}

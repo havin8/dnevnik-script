@@ -1,0 +1,11 @@
+{
+  "name": "dnevnik-script",
+  "private": true,
+  "description": "Дневник - новый интерфейс для электронного журнала Top Academy (юзерскрипт)",
+  "scripts": {
+    "build": "python3 build.py"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
