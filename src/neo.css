@@ -616,7 +616,7 @@
 
 /* луч света: диагональная полоса от верхнего левого края, плавно гаснет книзу - без резких краёв */
 .dn.neo .main{isolation:isolate}
-.dn.neo .main::before{content:"";position:absolute;left:0;right:0;top:0;height:1100px;z-index:-1;pointer-events:none;
+.dn.neo .main::before{content:"";position:absolute;left:0;right:0;top:0;height:1100px;max-height:100%;z-index:-1;pointer-events:none;
   background:linear-gradient(112deg,transparent 30%,rgba(var(--acc-rgb),.09) 42%,rgba(var(--acc2-rgb),.07) 50%,transparent 62%),linear-gradient(112deg,transparent 55%,rgba(var(--acc-rgb),.05) 62%,transparent 70%);
   -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 45%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 45%,transparent 100%);filter:blur(10px)}
 /* 4.4.1: ничего не вылезает за карточки на узких экранах */
@@ -676,3 +676,7 @@
 /* топкоины и топгемы - значками как в журнале (вид по умолчанию) */
 .dn:not([data-mc=true]) .coin,.dn:not([data-mc=true]) .gem{border-radius:0;box-shadow:none;clip-path:none;background:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI0ZGQjU0NyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM5IiBmaWxsPSIjRkY5NTAwIi8+PGcgZmlsbD0iI0ZGQzQ2QiI+PHBhdGggZD0iTTQyIDIyaDE0djM1YzAgNCAyIDYgNiA2aDZ2MTJoLTljLTExIDAtMTctNi0xNy0xN3oiLz48cmVjdCB4PSIzMiIgeT0iMzYiIHdpZHRoPSIzNCIgaGVpZ2h0PSIxMiIgcng9IjQiLz48L2c+PC9zdmc+) center/contain no-repeat}
 .dn:not([data-mc=true]) .gem{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBCM0YwQiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQyIiBmaWxsPSIjMkE3QTAwIi8+PHBvbHlnb24gcG9pbnRzPSI1MC4wLDI5LjAgNTAuMCw4LjAgODIuOCwyMy44IDY2LjQsMzYuOSIgZmlsbD0iIzdDQzgwMCIvPjxwb2x5Z29uIHBvaW50cz0iNjYuNCwzNi45IDgyLjgsMjMuOCA5MC45LDU5LjMgNzAuNSw1NC43IiBmaWxsPSIjNUVBRDAwIi8+PHBvbHlnb24gcG9pbnRzPSI3MC41LDU0LjcgOTAuOSw1OS4zIDY4LjIsODcuOCA1OS4xLDY4LjkiIGZpbGw9IiMzRTkyMDAiLz48cG9seWdvbiBwb2ludHM9IjU5LjEsNjguOSA2OC4yLDg3LjggMzEuOCw4Ny44IDQwLjksNjguOSIgZmlsbD0iIzJBN0EwMCIvPjxwb2x5Z29uIHBvaW50cz0iNDAuOSw2OC45IDMxLjgsODcuOCA5LjEsNTkuMyAyOS41LDU0LjciIGZpbGw9IiMxRjZCMDAiLz48cG9seWdvbiBwb2ludHM9IjI5LjUsNTQuNyA5LjEsNTkuMyAxNy4yLDIzLjggMzMuNiwzNi45IiBmaWxsPSIjM0U5MjAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMy42LDM2LjkgMTcuMiwyMy44IDUwLjAsOC4wIDUwLjAsMjkuMCIgZmlsbD0iIzZCQkEwMCIvPjxwb2x5Z29uIHBvaW50cz0iNTAuMCwyOS4wIDY2LjQsMzYuOSA3MC41LDU0LjcgNTkuMSw2OC45IDQwLjksNjguOSAyOS41LDU0LjcgMzMuNiwzNi45IiBmaWxsPSIjOTRFMDAwIi8+PC9zdmc+)}
+
+/* iPad/iPhone: окно Дневника всегда прокручивается хотя бы на 1px - иначе на коротких разделах жест уходит странице журнала
+   и Safari сдвигает весь экран (чёрная полоса внизу, которая не возвращается сама) */
+:host>.dn{min-height:calc(100% + 1px)!important}

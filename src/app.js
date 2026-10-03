@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Дневник - новый дизайн журнала
 // @namespace    dnevnik.artem
-// @version      4.5.0
+// @version      4.5.2
 // @description  Полноценный дизайн "Дневника" поверх журнала: свои страницы, живые данные из журнала, мгновенная загрузка из кэша.
 // @match        https://journal.top-academy.ru/*
 // @run-at       document-start
@@ -56,7 +56,7 @@
     return;
   }
   W.__dnLoaded = VERSION_HDR();
-  const VERSION = (() => { try { const i = typeof GM_info !== "undefined" ? GM_info : typeof GM !== "undefined" && GM && GM.info ? GM.info : null; const v = i && i.script && i.script.version; if (v && /^\d+(\.\d+)*$/.test(v)) return v; } catch (e) {} return "4.5.0"; })();
+  const VERSION = (() => { try { const i = typeof GM_info !== "undefined" ? GM_info : typeof GM !== "undefined" && GM && GM.info ? GM.info : null; const v = i && i.script && i.script.version; if (v && /^\d+(\.\d+)*$/.test(v)) return v; } catch (e) {} return "4.5.2"; })();
 
   /* ======================= настройки и хранилище ======================= */
   // небольшие настройки дублируются в хранилище расширения: журнал иногда очищает хранилище сайта (при входе/выходе),
@@ -262,7 +262,7 @@ send("ready",{});
 
   /* ======================= новая версия Дневника ======================= */
   // что нового в текущей версии - показывается в Настройках
-  const CHANGES = ["Топкоины и топгемы - значками как в журнале", "iPad и iPhone: нажатия больше не сползают на соседние кнопки и пункты меню", "Итоги месяца: только завершённый месяц - текущий появится в последние 3 дня", "Настройки: графика - авто, полная или лёгкая для слабых устройств", "Безопасность: запросы с ключом входа уходят только на серверы журнала", "Если журнал поменяет вёрстку и Дневник не запустится - откроется обычный журнал с кнопкой Дневника", "Главная: под ближайшим учебным днём показан следующий за ним день, а не тот же", "Настройки: цели по баллу и посещаемости можно скрыть", "Средние показатели: вернулся прежний вид графика", "Все пары: при открытии всегда текущая неделя и её итог", "Меню: двузначные счётчики больше не обрезаются", "Метка «новое» - справа от названия, новая карточка обведена цветом акцента", "День рождения: конфетти не перекрывают текст", "Уведомления на главной: в две колонки, кнопки по центру"];
+  const CHANGES = ["Короткие разделы (материалы, контакты, жалобы и др.) больше не прокручиваются в пустую чёрную полосу", "iPad: короткие разделы при прокрутке больше не сдвигают экран и не оставляют чёрную полосу", "Топкоины и топгемы - значками как в журнале", "iPad и iPhone: нажатия больше не сползают на соседние кнопки и пункты меню", "Итоги месяца: только завершённый месяц - текущий появится в последние 3 дня", "Настройки: графика - авто, полная или лёгкая для слабых устройств", "Безопасность: запросы с ключом входа уходят только на серверы журнала", "Если журнал поменяет вёрстку и Дневник не запустится - откроется обычный журнал с кнопкой Дневника", "Главная: под ближайшим учебным днём показан следующий за ним день, а не тот же", "Настройки: цели по баллу и посещаемости можно скрыть", "Средние показатели: вернулся прежний вид графика", "Все пары: при открытии всегда текущая неделя и её итог", "Меню: двузначные счётчики больше не обрезаются", "Метка «новое» - справа от названия, новая карточка обведена цветом акцента", "День рождения: конфетти не перекрывают текст", "Уведомления на главной: в две колонки, кнопки по центру"];
   // карточка «Крипта» есть в основной версии; по умолчанию выключена (Настройки → Внешний вид)
   const CRYPTO = true;
   const UPD_URL = "https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js";
@@ -3147,7 +3147,7 @@ send("ready",{});
   function start() {
     if (started) return; started = true;
     if (!cfg.on) return;
-    try { const bg = document.createElement("style"); bg.id = "dn-bg"; bg.textContent = "html.dn-on,html.dn-on body{background:#000!important;color-scheme:dark}html.dn-on:not(.dn-raise-open),html.dn-on:not(.dn-raise-open) body{overflow:hidden!important;overscroll-behavior:none!important;height:100%!important}";
+    try { const bg = document.createElement("style"); bg.id = "dn-bg"; bg.textContent = "html.dn-on,html.dn-on body{background:#000!important;color-scheme:dark}html.dn-on,html.dn-on body{overflow:hidden!important;overscroll-behavior:none!important;height:100%!important}html.dn-on body{position:fixed!important;inset:0!important;width:100%!important;margin:0!important}";
       if (W.visualViewport) W.visualViewport.addEventListener("scroll", () => { if (host && document.documentElement.classList.contains("dn-on") && (W.scrollY || W.scrollX || W.visualViewport.offsetTop)) W.scrollTo(0, 0); }); (document.head || document.documentElement).appendChild(bg);
       const tc = () => { if (!document.head) return setTimeout(tc, 100); let m = document.querySelector('meta[name="theme-color"]'); if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m); } m.content = "#000000"; }; tc(); } catch (e) {}
     NET.token = NET.token || scanStorageForToken();
