@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Дневник - новый дизайн журнала
 // @namespace    dnevnik.artem
-// @version      4.5.2
+// @version      4.5.6
 // @description  Полноценный дизайн "Дневника" поверх журнала: свои страницы, живые данные из журнала, мгновенная загрузка из кэша.
 // @match        https://journal.top-academy.ru/*
 // @run-at       document-start
@@ -25,6 +25,8 @@
 // @connect      api.kraken.com
 // @connect      www.cbr.ru
 // @connect      www.cbr-xml-daily.ru
+// @connect      cdn.jsdelivr.net
+// @connect      currency-api.pages.dev
 // @noframes
 // @updateURL    https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js
 // @downloadURL  https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js
@@ -56,7 +58,7 @@
     return;
   }
   W.__dnLoaded = VERSION_HDR();
-  const VERSION = (() => { try { const i = typeof GM_info !== "undefined" ? GM_info : typeof GM !== "undefined" && GM && GM.info ? GM.info : null; const v = i && i.script && i.script.version; if (v && /^\d+(\.\d+)*$/.test(v)) return v; } catch (e) {} return "4.5.2"; })();
+  const VERSION = (() => { try { const i = typeof GM_info !== "undefined" ? GM_info : typeof GM !== "undefined" && GM && GM.info ? GM.info : null; const v = i && i.script && i.script.version; if (v && /^\d+(\.\d+)*$/.test(v)) return v; } catch (e) {} return "4.5.6"; })();
 
   /* ======================= настройки и хранилище ======================= */
   // небольшие настройки дублируются в хранилище расширения: журнал иногда очищает хранилище сайта (при входе/выходе),
@@ -262,7 +264,7 @@ send("ready",{});
 
   /* ======================= новая версия Дневника ======================= */
   // что нового в текущей версии - показывается в Настройках
-  const CHANGES = ["Короткие разделы (материалы, контакты, жалобы и др.) больше не прокручиваются в пустую чёрную полосу", "iPad: короткие разделы при прокрутке больше не сдвигают экран и не оставляют чёрную полосу", "Топкоины и топгемы - значками как в журнале", "iPad и iPhone: нажатия больше не сползают на соседние кнопки и пункты меню", "Итоги месяца: только завершённый месяц - текущий появится в последние 3 дня", "Настройки: графика - авто, полная или лёгкая для слабых устройств", "Безопасность: запросы с ключом входа уходят только на серверы журнала", "Если журнал поменяет вёрстку и Дневник не запустится - откроется обычный журнал с кнопкой Дневника", "Главная: под ближайшим учебным днём показан следующий за ним день, а не тот же", "Настройки: цели по баллу и посещаемости можно скрыть", "Средние показатели: вернулся прежний вид графика", "Все пары: при открытии всегда текущая неделя и её итог", "Меню: двузначные счётчики больше не обрезаются", "Метка «новое» - справа от названия, новая карточка обведена цветом акцента", "День рождения: конфетти не перекрывают текст", "Уведомления на главной: в две колонки, кнопки по центру"];
+  const CHANGES = ["Главная: у каждого задания свой значок - новое, просрочено, на проверке, оценено", "Оценки: подписано, где средний балл за всё время, а где за эту неделю", "Домашние задания: компактные кнопки на телефоне, срок и преподаватель в одну строку", "Крипта в Safari: без ошибки Rapira, курс ЦБ подписан как курс ЦБ", "Крипта в Safari (iPhone, iPad, Mac): курс доллара и график из источников, которые Safari разрешает", "Домашние задания: кнопки файлов и «Сдать задание» внизу карточки, ровно и без обрезанного текста", "Крипта: график доллара берётся из запасных источников, если сайт Банка России не отвечает (часто с VPN)", "iPad: при наборе текста окно поднимается над клавиатурой и не прыгает при прокрутке", "Расписание: метка «сегодня» не вылезает за колонку", "Домашние задания: кнопки файлов не вылезают за карточку", "Короткие разделы (материалы, контакты, жалобы и др.) больше не прокручиваются в пустую чёрную полосу", "iPad: короткие разделы при прокрутке больше не сдвигают экран и не оставляют чёрную полосу", "Топкоины и топгемы - значками как в журнале", "iPad и iPhone: нажатия больше не сползают на соседние кнопки и пункты меню", "Итоги месяца: только завершённый месяц - текущий появится в последние 3 дня", "Настройки: графика - авто, полная или лёгкая для слабых устройств", "Безопасность: запросы с ключом входа уходят только на серверы журнала", "Если журнал поменяет вёрстку и Дневник не запустится - откроется обычный журнал с кнопкой Дневника", "Главная: под ближайшим учебным днём показан следующий за ним день, а не тот же", "Настройки: цели по баллу и посещаемости можно скрыть", "Средние показатели: вернулся прежний вид графика", "Все пары: при открытии всегда текущая неделя и её итог", "Меню: двузначные счётчики больше не обрезаются", "Метка «новое» - справа от названия, новая карточка обведена цветом акцента", "День рождения: конфетти не перекрывают текст", "Уведомления на главной: в две колонки, кнопки по центру"];
   // карточка «Крипта» есть в основной версии; по умолчанию выключена (Настройки → Внешний вид)
   const CRYPTO = true;
   const UPD_URL = "https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js";
@@ -289,9 +291,9 @@ send("ready",{});
   const MKT = { usd: null, cbr: null, cbrHist: [], coins: {}, hist: {}, histAt: {}, fng: null, fngHist: [], at: 0, fngAt: 0, cbrAt: 0, fail: 0 };
   // сохранённые курсы читаем только когда карточка нужна; цены (маленькие) и графики (большие) хранятся отдельно - графики пишутся только когда обновились
   let mkLoaded = false, mkHistDirty = false, mkTimer = 0, mkBound = false;
-  const mkEnsure = () => { if (mkLoaded) return; mkLoaded = true; Object.assign(MKT, LS.get("mkt2", {}), LS.get("mkth", {})); };
+  const mkEnsure = () => { if (mkLoaded) return; mkLoaded = true; Object.assign(MKT, LS.get("mkt2", {}), LS.get("mkth", {})); if (!NO_CORS_OK) { MKT.rapErr = null; MKT.usd = null; } };
   function mkSave() {
-    LS.set("mkt2", { usd: MKT.usd, cbr: MKT.cbr, coins: MKT.coins, fng: MKT.fng, at: MKT.at, fngAt: MKT.fngAt, cbrAt: MKT.cbrAt, fail: MKT.fail, rapErr: MKT.rapErr });
+    LS.set("mkt2", { usd: MKT.usd, cbr: MKT.cbr, cbrSrc: MKT.cbrSrc, coins: MKT.coins, fng: MKT.fng, at: MKT.at, fngAt: MKT.fngAt, cbrAt: MKT.cbrAt, fail: MKT.fail, rapErr: NO_CORS_OK ? MKT.rapErr : null });
     if (mkHistDirty) { mkHistDirty = false; LS.set("mkth", { cbrHist: MKT.cbrHist, hist: MKT.hist, histAt: MKT.histAt, fngHist: MKT.fngHist }); }
   }
   // карточка на экране? (не грузим курсы, пока её не видно)
@@ -348,19 +350,44 @@ send("ready",{});
       .map(m => [new Date(+m[3], +m[2] - 1, +m[1]).getTime(), mnum(m[5]) / (+m[4] || 1)]).filter(r => r[1]);
     if (out.length < 2) throw new Error("пусто"); return out;
   }
+  // запасные источники истории: дни уже прошедшие не меняются - храним в кэше и докачиваем только новые
+  const dayKey = d => d.getFullYear() + "/" + String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0");
+  async function histByDays(cacheKey, url, pick, step) {
+    const cache = LS.get(cacheKey, {}), now = Date.now(), days = [];
+    for (let k = 0; k <= 94; k += step) days.push(new Date(now - k * 864e5));
+    const todo = days.filter(d => !(dayKey(d) in cache));
+    for (let i = 0; i < todo.length; i += 6) await Promise.all(todo.slice(i, i + 6).map(d => xget(url(d)).then(j => { const v = pick(j); if (v) cache[dayKey(d)] = v; else if (now - d > 3 * 864e5) cache[dayKey(d)] = 0; })
+      .catch(e => { if (/404/.test(String(e && e.message)) && now - d > 3 * 864e5) cache[dayKey(d)] = 0; })));
+    const keep = {}; days.forEach(d => { const k = dayKey(d); if (k in cache) keep[k] = cache[k]; }); LS.set(cacheKey, keep);
+    const out = Object.entries(keep).filter(([, v]) => v > 0).map(([k, v]) => { const [y, m, d] = k.split("/").map(Number); return [new Date(y, m - 1, d).getTime(), v]; }).sort((a, b) => a[0] - b[0]);
+    if (out.length < 2) throw new Error("пусто"); return out;
+  }
+  const cbrArchive = () => histByDays("cbrd", d => `https://www.cbr-xml-daily.ru/archive/${dayKey(d)}/daily_json.js`, j => j && j.Valute && j.Valute.USD && mnum(j.Valute.USD.Value), 2);
+  const fxMarket = () => histByDays("fxd", d => `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${dayKey(d).replace(/\//g, "-")}/v1/currencies/usd.min.json`, j => j && j.usd && mnum(j.usd.rub), 3);
+  const NO_CORS_OK = HAS_UW && typeof GM_xmlhttpRequest === "function";   // Tampermonkey ходит куда угодно, Safari - только к сайтам с CORS
+  async function usdHistory() {
+    if (NO_CORS_OK) try { MKT.cbrSrc = "cbr"; return await cbrHistory(); } catch (e) {}
+    try { MKT.cbrSrc = "cbr"; return await cbrArchive(); } catch (e) {}
+    MKT.cbrSrc = "fx"; return await fxMarket();
+  }
   async function marketLoad(force) {
     if (!CRYPTO || !cfg.mkt || mkBusy || (mkEnsure(), !force && Date.now() - MKT.at < 55e3)) return;
     mkBusy = true; const now = Date.now(); let ok = 0;
     const jobs = [
-      rapiraLoad().then(() => { ok++; }).catch(e => { MKT.rapErr = { m: String(e.message || e).slice(0, 120), at: now }; }),
+      (NO_CORS_OK ? rapiraLoad() : Promise.reject(new Error("в Safari недоступна"))).then(() => { ok++; }).catch(e => { MKT.rapErr = NO_CORS_OK ? { m: String(e.message || e).slice(0, 120), at: now } : null; if (!NO_CORS_OK) MKT.usd = null; }),
       ...COINS.map(([t]) => coinTicker(t).then(r => { MKT.coins[t] = r; ok++; }).catch(() => {})),
       mkHistLoad(mkPer, force)];
     if (force || now - MKT.fngAt > 30 * 60e3) jobs.push(xget("https://api.alternative.me/fng/?limit=31").then(j => { const d = j && j.data;
       if (d && d[0]) { MKT.fng = { v: +d[0].value, c: d[0].value_classification, y: d[1] ? +d[1].value : null, w: d[7] ? +d[7].value : null, m: d[30] ? +d[30].value : null };
         MKT.fngHist = d.map(x => [+x.timestamp * 1000, +x.value]).reverse(); MKT.fngAt = now; mkHistDirty = true; } }).catch(() => {}));
-    if (force || now - MKT.cbrAt > 3600e3) jobs.push(cbrHistory().then(h => { MKT.cbrHist = h; mkHistDirty = true; const a = h[h.length - 1], b = h[h.length - 2]; MKT.cbr = { v: a[1], d: a[0], prev: b[1], pd: b[0] }; MKT.cbrAt = now; ok++; })
+    if (force || now - MKT.cbrAt > (MKT.cbrHist && MKT.cbrHist.length > 1 ? 3600e3 : 120e3)) jobs.push(usdHistory().then(h => { MKT.cbrHist = h; mkHistDirty = true; MKT.cbrAt = now; ok++; const a = h[h.length - 1], b = h[h.length - 2];
+      if (MKT.cbrSrc !== "fx") { MKT.cbr = { v: a[1], d: a[0], prev: b[1], pd: b[0] }; return; }
+      return xget("https://www.cbr-xml-daily.ru/daily_json.js").then(j => { const u = j && j.Valute && j.Valute.USD; if (u && mnum(u.Value)) MKT.cbr = { v: mnum(u.Value), prev: mnum(u.Previous), d: Date.parse(j.Date) || now }; }).catch(() => {}); })
       .catch(() => xget("https://www.cbr-xml-daily.ru/daily_json.js").then(j => { const u = j && j.Valute && j.Valute.USD; if (u && mnum(u.Value)) { MKT.cbr = { v: mnum(u.Value), prev: mnum(u.Previous), d: Date.parse(j.Date) || now }; MKT.cbrAt = now; } }).catch(() => {})));
     await Promise.all(jobs);
+    if (!MKT.cbr && !MKT.usd) await xget("https://www.cbr-xml-daily.ru/daily_json.js").then(j => { const u = j && j.Valute && j.Valute.USD; if (u && mnum(u.Value)) { MKT.cbr = { v: mnum(u.Value), prev: mnum(u.Previous), d: Date.parse(j.Date) || now }; ok++; } }).catch(() => {});
+    if (!MKT.cbr && !MKT.usd && (MKT.cbrHist || []).length > 1) { const h = MKT.cbrHist, x = h[h.length - 1], y = h[h.length - 2]; MKT.cbr = { v: x[1], d: x[0], prev: y[1], pd: y[0], fx: true }; }
+    MKT.diag = `Крипта: курс ${MKT.usd ? "Rapira" : MKT.cbr ? "ЦБ" : "нет"} · график ${(MKT.cbrHist || []).length > 1 ? (MKT.cbrSrc === "fx" ? "рыночный" : "ЦБ") + " " + MKT.cbrHist.length + " дн." : "нет"} · монет ${Object.keys(MKT.coins || {}).length} · ${NO_CORS_OK ? "Tampermonkey" : "Safari"}${MKT.rapErr ? " · Rapira: " + MKT.rapErr.m : ""}`;
     if (ok) { MKT.at = now; MKT.fail = 0; } else MKT.fail = now;
     mkSave(); mkBusy = false; mkPaint();
   }
@@ -427,7 +454,7 @@ send("ready",{});
   function usdNow() {
     const u = MKT.usd, c = MKT.cbr, fresh = u && Date.now() - (u.at || MKT.at) < 6 * 3600e3;
     if (fresh) return { v: u.v, ch: u.prev ? (u.v / u.prev - 1) * 100 : null, src: "Rapira", sub: "USDT/RUB", note: u.prev ? `вчера закрылся на ${fx(u.prev, 2)} ₽` : "" };
-    if (c) return { v: c.v, ch: c.prev ? (c.v / c.prev - 1) * 100 : null, src: "ЦБ РФ", sub: c.d ? "курс на " + dm2(c.d) : "официальный курс", note: MKT.rapErr ? "Rapira сейчас не отвечает - показан курс ЦБ" : (c.prev ? `${c.pd ? dm2(c.pd) : "до этого"} было ${fx(c.prev, 2)} ₽` : "") };
+    if (c) return { v: c.v, ch: c.prev ? (c.v / c.prev - 1) * 100 : null, src: c.fx ? "рынок" : "ЦБ РФ", sub: c.d ? "курс на " + dm2(c.d) : "официальный курс", note: MKT.rapErr && NO_CORS_OK ? "Rapira сейчас не отвечает - показан курс ЦБ" : c.fx ? "рыночный курс доллара - ЦБ сейчас недоступен" : !NO_CORS_OK ? "официальный курс Банка России" : (c.prev ? `${c.pd ? dm2(c.pd) : "до этого"} было ${fx(c.prev, 2)} ₽` : "") };
     return null;
   }
   const mkRub = (v, cls) => `${fx(v, 2)}<small class="${cls || ""}">₽</small>`;
@@ -447,9 +474,9 @@ send("ready",{});
           <div class="mk-mtop"><span class="mk-lbl">Доллар США</span><span class="mk-src">${U ? U.src + " · " + U.sub : "загрузка"}</span></div>
           <div class="mk-bigrow"><div class="mk-big num">${U ? mkRub(U.v) : "…"}</div>${chPill(U && U.ch)}</div>
           <div class="mk-bsub">${U && U.note ? esc(U.note) : "&nbsp;"}${spread != null ? `<span class="mk-dotsep"></span>ЦБ ${fx(c.v, 2)} ₽ · ${spread >= 0 ? "+" : "−"}${fx(Math.abs(spread), 2)}% к ЦБ` : ""}</div>
-          ${mkChart("usd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "big", fmt: v => fx(v, 2) + " ₽", empty: "Нет данных ЦБ для графика" })}
+          ${mkChart("usd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "big", fmt: v => fx(v, 2) + " ₽", empty: "График курса пока не загрузился - попробуй обновить или выключить VPN" })}
           <div class="mk-stats"><div><span>Макс.</span><b class="num">${st ? fx(st.mx, 2) + " ₽" : "-"}</b></div><div><span>Мин.</span><b class="num">${st ? fx(st.mn, 2) + " ₽" : "-"}</b></div>
-            <div><span>За ${MK_PER[mkPer].l}</span><b class="num ${pc == null ? "" : pc >= 0 ? "mup" : "mdn"}">${pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-"}</b></div><div class="mk-sfoot">график и мин./макс. - курс ЦБ по дням</div></div>
+            <div><span>За ${MK_PER[mkPer].l}</span><b class="num ${pc == null ? "" : pc >= 0 ? "mup" : "mdn"}">${pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-"}</b></div><div class="mk-sfoot">график и мин./макс. - ${MKT.cbrSrc === "fx" ? "рыночный курс по дням" : "курс ЦБ по дням"}</div></div>
         </div>
         <div class="mk-side">
           <div class="mk-list"><div class="mk-lh"><span>Монеты</span><span>${esc(srcs)} · за ${MK_PER[mkPer].l}</span></div>
@@ -473,11 +500,11 @@ send("ready",{});
       const c = MKT.cbr, ch = cbrPer(mkPer), pc = perCh(ch), U = usdNow(), u = MKT.usd;
       head = `${coinIc("#3fb67e", "$")}<div class="mk-nm"><b>Доллар к рублю</b><span>${U ? U.src + " · " + U.sub : ""}</span></div>`;
       body = `<div class="mks-price"><b class="num">${U ? (U.src === "ЦБ РФ" ? fx(U.v, 4) + "<small>₽</small>" : mkRub(U.v)) : "-"}</b>${chPill(U && U.ch)}</div>
-        <div class="mks-sec">Rapira · USDT/RUB</div>
+        ${u || MKT.rapErr ? `<div class="mks-sec">Rapira · USDT/RUB</div>` : ""}
         ${u ? `<div class="mks-grid">${row("Покупка", u.bid ? fx(u.bid, 2) + " ₽" : "-")}${row("Продажа", u.ask ? fx(u.ask, 2) + " ₽" : "-")}${row("Макс. за сутки", u.hi ? fx(u.hi, 2) + " ₽" : "-")}${row("Мин. за сутки", u.lo ? fx(u.lo, 2) + " ₽" : "-")}</div>` : ""}
-        ${MKT.rapErr ? `<div class="mks-err">Rapira не ответила в ${hm2(MKT.rapErr.at)}: ${esc(MKT.rapErr.m)}</div>` : ""}
+        ${MKT.rapErr && NO_CORS_OK ? `<div class="mks-err">Rapira не ответила в ${hm2(MKT.rapErr.at)}: ${esc(MKT.rapErr.m)}</div>` : ""}
         <div class="mks-sec">Курс ЦБ РФ${c && c.d ? " на " + dm2(c.d) : ""}</div>${per()}
-        ${mkChart("dusd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "sheet", fmt: v => fx(v, 2) + " ₽", empty: "Нет данных ЦБ" })}
+        ${mkChart("dusd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "sheet", fmt: v => fx(v, 2) + " ₽", empty: "График курса пока не загрузился" })}
         <div class="mks-grid">${row("Курс ЦБ (точно)", c ? fx(c.v, 4) + " ₽" : "-")}${row("Прошлый курс" + (c && c.pd ? " (" + dm2(c.pd) + ")" : ""), c && c.prev ? fx(c.prev, 2) + " ₽" : "-")}${row("За " + MK_PER[mkPer].l, pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-")}
         ${row("Макс. за " + MK_PER[mkPer].l, ch ? fx(Math.max(...ch.map(r => r[1])), 2) + " ₽" : "-")}${row("Мин. за " + MK_PER[mkPer].l, ch ? fx(Math.min(...ch.map(r => r[1])), 2) + " ₽" : "-")}${u && c ? row("Rapira к ЦБ", (u.v >= c.v ? "+" : "−") + fx(Math.abs(u.v / c.v - 1) * 100, 2) + "%") : ""}</div>`;
     } else if (k === "fng") {
@@ -1208,10 +1235,18 @@ send("ready",{});
       if (fpsBad >= 2) { LS.set("gfxauto", 1); applyGfx(); } };
     requestAnimationFrame(tick);
   }
+  // идёт набор текста (открыта клавиатура): поле в Дневнике или в окне журнала
+  const typing = () => { const isEd = a => a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !/^(checkbox|radio|button|submit|file|range)$/i.test(a.type || "") || a.isContentEditable);
+    return isEd(R && R.activeElement) || isEd(document.activeElement); };
+  // высота клавиатуры: окно Дневника поднимается над ней (iPad, iPhone)
+  function kbFit() { if (!host || !W.visualViewport) return; const vv = W.visualViewport, kb = Math.max(0, Math.round(W.innerHeight - vv.height - vv.offsetTop));
+    if (kb > 80 && typing()) { host.setAttribute("data-kb", ""); host.style.setProperty("--kb", kb + "px"); } else { host.removeAttribute("data-kb"); host.style.removeProperty("--kb"); } }
+  if (W.visualViewport) { W.visualViewport.addEventListener("resize", kbFit); W.visualViewport.addEventListener("scroll", kbFit); }
+  document.addEventListener("focusin", () => setTimeout(kbFit, 300)); document.addEventListener("focusout", () => setTimeout(kbFit, 300));
   function mount() {
     dropVeil();
     if (host) return;
-    if (!W.__dnScrollLock) { W.__dnScrollLock = 1; const fix = () => { if (host && document.documentElement.classList.contains("dn-on") && (W.scrollY || W.scrollX)) W.scrollTo(0, 0); };
+    if (!W.__dnScrollLock) { W.__dnScrollLock = 1; const fix = () => { if (host && document.documentElement.classList.contains("dn-on") && !typing() && (W.scrollY || W.scrollX)) W.scrollTo(0, 0); };
       W.addEventListener("scroll", fix, { passive: true }); if (W.visualViewport) W.visualViewport.addEventListener("resize", () => setTimeout(fix, 60)); document.addEventListener("focusout", () => setTimeout(fix, 60)); }
     host = document.createElement("div"); host.id = "dn-app"; applyGfx();
     host.style.cssText = "position:fixed;inset:0;z-index:2147483000;overflow:auto;overscroll-behavior:contain;background:#0a0c10";
@@ -1406,7 +1441,7 @@ send("ready",{});
     const L = (M.hw || []).slice().sort((a, b) => (ord[a.status] - ord[b.status]) || (a.status === "done" ? (b.due || "").localeCompare(a.due || "") : (a.due || "").localeCompare(b.due || ""))).slice(0, 4);
     const tag = h => { const d = h.due ? dayDiff(now, fromIso(h.due)) : null;
       return h.status === "done" ? `<span class="td-tag g">оценка ${esc(String(h.mark))}</span>` : h.status === "wait" ? `<span class="td-tag y">на проверке</span>` : h.status === "late" || (d != null && d < 0) ? `<span class="td-tag p">${h.removed ? "удалено" : "просрочено"}</span>` : d === 0 ? `<span class="td-tag p">сегодня до 23:59</span>` : `<span class="td-tag c">до ${h.due ? dm(fromIso(h.due)) : "-"}</span>`; };
-    const row = h => `<button class="td-row ${h.status}" data-page="homework"><span class="td-ck">${h.status === "done" ? ic("check") : h.status === "wait" ? ic("clock") : ""}</span><span class="td-tx"><b>${esc(h.theme || "Домашнее задание")}</b><span>${esc(subjShort(h.subj))}${tag(h)}</span></span></button>`;
+    const row = h => `<button class="td-row ${h.status}" data-page="homework"><span class="td-ck">${h.status === "done" ? ic("check") : h.status === "wait" ? ic("clock") : h.status === "late" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 6.5v7M12 17.6v.01"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>'}</span><span class="td-tx"><b>${esc(h.theme || "Домашнее задание")}</b><span>${esc(subjShort(h.subj))}${tag(h)}</span></span></button>`;
     const ex = (M.exams || []);
     return `<div class="td-list">${L.map(row).join("") || `<p class="note">Заданий пока нет</p>`}</div>
       <div class="td-foot"><span>${ic("check")}Формы контроля: <b>${ex.length ? ex.map(x => esc(x.subj) + (x.date ? " · " + dm(fromIso(x.date)) : "")).join(", ") : "предстоящих нет"}</b></span>${s.hwCount ? `<span>${ic("timer")}Сдаёшь заранее: <b class="num">${f1(s.earlyAvg)} дн.</b></span>` : ""}</div>`;
@@ -1699,7 +1734,7 @@ send("ready",{});
     return `
     ${summaryMonths().length ? `<div class="card hint">${ic("star")}<div><b>Итоги месяца</b><span>Оценки, посещаемость, серии и календарь - за каждый месяц</span></div><button class="m-btn pri" data-act="month">Открыть</button></div>` : ""}
     <div class="row r4">
-      <div class="card kpi"><div class="lab">${ic("star")}Средний балл</div><div class="val num">${s.marks ? f2(s.avg) : "-"}</div><div class="sub">${s.allTop ? `все <b class="num">${s.marks}</b> оценок - «${s.maxMark}»` : `по <b class="num">${s.marks}</b> оценкам`}</div></div>
+      <div class="card kpi"><div class="lab">${ic("star")}Средний балл</div><div class="val num">${s.marks ? f2(s.avg) : "-"}</div><div class="sub">${s.allTop ? `все <b class="num">${s.marks}</b> оценок - «${s.maxMark}»` : `за всё время · <b class="num">${s.marks}</b> ${plural(s.marks, "оценка", "оценки", "оценок")}`}</div></div>
       <div class="card kpi"><div class="lab">${ic("hw")}За домашние</div><div class="val num">${s.hwN}</div><div class="sub">оценок за ДЗ</div></div>
       <div class="card kpi"><div class="lab">${ic("users")}За работу на паре</div><div class="val num">${s.cwN}</div><div class="sub">оценок за классную работу${s.otherN ? `<span class="oth">${["lab", "ctrl", "prac", "fin"].map(k => [k, (M.visits || []).filter(v => v[k] != null).length]).filter(x => x[1]).map(([k, n]) => `<span><i class="mark5 ${k} sw"></i>${MK_N[k]}: <b class="num">${n}</b></span>`).join("")}</span>` : ""}</div></div>
       <div class="card kpi"><div class="lab">${ic("check")}Пропуски</div><div class="val num">${s.miss}<small>из ${s.total}</small></div><div class="sub">${s.late ? `опозданий <b class="num">${s.late}</b>` : "опозданий нет"}</div></div>
@@ -1768,7 +1803,7 @@ send("ready",{});
     // изменение - нейтральное: рост при низкой посещаемости не должен выглядеть «хорошо»
     const tr = (d, f) => d == null ? "" : ` <small class="dlt">${d > 0 ? "▲" : d < 0 ? "▼" : ""} ${f(Math.abs(d))} за ${mode === "month" ? "месяц" : "неделю"}</small>`;
     return `<section class="card avgc">${head}
-      <div class="avg-kpis"><span><i style="background:var(--gcol)"></i>Средний балл<b class="num">${lastG != null ? f2(lastG) : "-"}</b>${tr(dG, f2)}</span><span><i style="background:var(--att)"></i>Посещаемость<b class="num ${attCls(lastA)}">${lastA != null ? Math.round(lastA) + "%" : "-"}</b>${tr(dA, x => Math.round(x) + "%")}</span></div>
+      <div class="avg-kpis"><span><i style="background:var(--gcol)"></i>Средний балл за ${mode === "month" ? "месяц" : "неделю"}<b class="num">${lastG != null ? f2(lastG) : "-"}</b>${tr(dG, f2)}</span><span><i style="background:var(--att)"></i>Посещаемость за ${mode === "month" ? "месяц" : "неделю"}<b class="num ${attCls(lastA)}">${lastA != null ? Math.round(lastA) + "%" : "-"}</b>${tr(dA, x => Math.round(x) + "%")}</span></div>
       <svg viewBox="0 0 ${Wd} ${H}" preserveAspectRatio="xMidYMid meet" style="height:${H}px" role="img" aria-label="Средний балл и посещаемость">${grid}${body}${xl}</svg>
       <div class="legend"><span><i style="background:var(--gcol)"></i>средний балл - левая шкала</span><span><i style="background:var(--att)"></i>посещаемость - правая шкала</span></div></section>`;
   }
@@ -1860,9 +1895,11 @@ send("ready",{});
       const nw = HK.has(h) && isNew("homework", HK.get(h));
       return `<article class="hw s-${subjKey(h.subj)} ${nw ? "isnew" : ""} ${h.status === "cur" && left != null && left <= 0 ? "dueday" : ""}"><div class="top2"><div><b>${esc(h.subj)}</b>${h.lab ? '<span class="labtag">лабораторная</span>' : ""}${h.removed ? '<span class="labtag rm">удалено преподавателем</span>' : ""}${nw ? `<span class="newtag">${h.status === "done" ? "оценка" : "новое"}</span>` : ""}${h.theme ? `<div class="th2">${esc(h.theme)}</div>` : ""}</div>${badge}</div>
         <div class="foot"><div>Срок<b class="num">${h.due ? dm(fromIso(h.due)) : "-"}</b></div><div>Сдано<b class="num">${h.sub ? dm(fromIso(h.sub)) : "-"}</b></div></div>
-        <div class="hwb">${h.task ? `<div class="hwx ${h.task.length > 160 ? "clamp" : ""}" ${h.task.length > 160 ? 'data-hwx="1"' : ""}><span>Задание</span><p>${esc(h.task)}</p></div>` : ""}${h.answer ? `<div class="hwx ans"><span>Мой ответ</span><p>${/^https?:/.test(h.answer) ? `<a href="${esc(h.answer)}" target="_blank" rel="noopener">${esc(h.answer.replace(/^https?:\/\//, "").slice(0, 40))}…</a>` : esc(h.answer)}</p></div>` : ""}${h.teacherComment ? `<div class="hwx tc"><span>Комментарий преподавателя${h.checked ? ` · ${dm(fromIso(h.checked))}` : ""}</span><p>${esc(h.teacherComment)}</p></div>` : ""}${h.taskFile || h.myFile ? `<div class="hwact">${h.taskFile ? `<a href="${esc(h.taskFile)}" target="_blank" rel="noopener">${ic("hw")}Файл задания</a>` : ""}${h.myFile ? `<a href="${esc(h.myFile)}" target="_blank" rel="noopener">${ic("upload")}Мой файл</a>` : ""}</div>` : ""}</div>
+        <div class="hwb">${h.task ? `<div class="hwx ${h.task.length > 160 ? "clamp" : ""}" ${h.task.length > 160 ? 'data-hwx="1"' : ""}><span>Задание</span><p>${esc(h.task)}</p></div>` : ""}${h.answer ? `<div class="hwx ans"><span>Мой ответ</span><p>${/^https?:/.test(h.answer) ? `<a href="${esc(h.answer)}" target="_blank" rel="noopener">${esc(h.answer.replace(/^https?:\/\//, "").slice(0, 40))}…</a>` : esc(h.answer)}</p></div>` : ""}${h.teacherComment ? `<div class="hwx tc"><span>Комментарий преподавателя${h.checked ? ` · ${dm(fromIso(h.checked))}` : ""}</span><p>${esc(h.teacherComment)}</p></div>` : ""}</div>
         <div class="hwft"><div class="early">${foot}${h.teacher ? `<span class="soft">${esc(shortT(h.teacher))}</span>` : ""}</div>
-        ${(h.status === "cur" || h.status === "late") && !h.removed ? `<div class="hwact"><button class="submit" data-hwf="${esc(hwRef(h))}">${ic("upload")}Сдать задание</button></div>` : ""}</div></article>`;
+        ${(() => { const files = (h.taskFile ? `<a href="${esc(h.taskFile)}" target="_blank" rel="noopener">${ic("hw")}<span>Файл задания</span></a>` : "") + (h.myFile ? `<a href="${esc(h.myFile)}" target="_blank" rel="noopener">${ic("upload")}<span>Мой файл</span></a>` : ""),
+          sub = (h.status === "cur" || h.status === "late") && !h.removed ? `<button class="submit" data-hwf="${esc(hwRef(h))}">${ic("upload")}<span>Сдать задание</span></button>` : "";
+          return files || sub ? `<div class="hwact">${files ? `<div class="hwfiles ${h.taskFile && h.myFile ? "two" : ""}">${files}</div>` : ""}${sub}</div>` : ""; })()}</div></article>`;
     };
     // новое - первым в своей группе, а группы с новым - выше остальных (не надо листать)
     const isNw = h => HK.has(h) && isNew("homework", HK.get(h));
@@ -2768,6 +2805,7 @@ send("ready",{});
   function diagnostics() {
     const ks = Object.keys(NET.status), okN = ks.filter(k => NET.status[k] === 200).length;
     const lines = [`Запросы: ${okN} из ${ks.length} успешно`].concat(ks.filter(k => NET.status[k] !== 200).map(k => `  ✗ ${k}: ${NET.status[k]}`));
+    if (CRYPTO && cfg.mkt && MKT.diag) lines.push(MKT.diag);
     if (NET.viewErr) lines.push("Раздел не открылся: " + NET.viewErr); if (NET.clearedLayers) lines.push("Убрано прозрачных слоёв журнала: " + NET.clearedLayers);
     return `# Дневник ${VERSION} · диагностика\nAPI: ${NET.base || DEFAULT_API} (${NET.base ? "найден" : "по умолчанию"}) · способ: ${NET.mode || "-"} · перехват: ${NET.hook || "unsafeWindow"}\nТокен: ${NET.token ? "найден (" + (NET.tokenSrc || "?") + ")" : "нет"} · перехват событий: ${NET.hook === "page" ? NET.hookEvents : "-"}${NET.modeNote ? " · " + NET.modeNote : ""}\nБраузер: ${navigator.userAgent}\n\n${lines.join("\n")}${NET.site401 ? "\nЖурнал получил 401: " + Math.round((Date.now() - NET.site401) / 1000) + " с назад" : ""}${NET.ddos ? "\nDDoS-Guard: да" : ""}\nОтметки оценки пар: учитель ${evTags("evaluation_lesson_teach").length}, занятие ${evTags("evaluation_lesson").length}${NET.tagPaths ? " · адреса: " + NET.tagPaths.join(", ") : ""}\n\n## Последнее окно журнала\n${NET.pop || "-"}\n\n## Отправки сайта\n${NET.writes.join("\n") || "-"}\n\n## Данные разделов журнала\n${Object.keys(NET.site).filter(k => !Object.values(NET.raw).some(r => r.path.startsWith(k))).map(k => "### " + k + "\n" + NET.site[k].slice(0, 800)).join("\n\n") || "-"}\n\n` +
       Object.keys(NET.raw).filter(k => !/ p[2-9]\d*$/.test(k) && (NET.status[k] !== 200 || /^(user|visits|hwCount|evalLessons)$/.test(k))).map(k => `### ${k} (${NET.raw[k].path})\n` + JSON.stringify(NET.raw[k].data).slice(0, 500)).join("\n\n");
@@ -3148,7 +3186,7 @@ send("ready",{});
     if (started) return; started = true;
     if (!cfg.on) return;
     try { const bg = document.createElement("style"); bg.id = "dn-bg"; bg.textContent = "html.dn-on,html.dn-on body{background:#000!important;color-scheme:dark}html.dn-on,html.dn-on body{overflow:hidden!important;overscroll-behavior:none!important;height:100%!important}html.dn-on body{position:fixed!important;inset:0!important;width:100%!important;margin:0!important}";
-      if (W.visualViewport) W.visualViewport.addEventListener("scroll", () => { if (host && document.documentElement.classList.contains("dn-on") && (W.scrollY || W.scrollX || W.visualViewport.offsetTop)) W.scrollTo(0, 0); }); (document.head || document.documentElement).appendChild(bg);
+      if (W.visualViewport) W.visualViewport.addEventListener("scroll", () => { if (host && document.documentElement.classList.contains("dn-on") && !typing() && (W.scrollY || W.scrollX || W.visualViewport.offsetTop)) W.scrollTo(0, 0); }); (document.head || document.documentElement).appendChild(bg);
       const tc = () => { if (!document.head) return setTimeout(tc, 100); let m = document.querySelector('meta[name="theme-color"]'); if (!m) { m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m); } m.content = "#000000"; }; tc(); } catch (e) {}
     NET.token = NET.token || scanStorageForToken();
     computeFresh();

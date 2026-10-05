@@ -680,3 +680,45 @@
 /* iPad/iPhone: окно Дневника всегда прокручивается хотя бы на 1px - иначе на коротких разделах жест уходит странице журнала
    и Safari сдвигает весь экран (чёрная полоса внизу, которая не возвращается сама) */
 :host>.dn{min-height:calc(100% + 1px)!important}
+
+/* 4.5.3: клавиатура открыта - окно прижимается к верху и умещается над клавиатурой, внутри прокручивается */
+:host([data-kb]) .dn dialog[open]{margin-top:12px;margin-bottom:auto;max-height:calc(100dvh - var(--kb,0px) - 24px);overflow:auto;-webkit-overflow-scrolling:touch}
+/* расписание: метка «сегодня» переносится под название дня, а не вылезает за колонку */
+.dn.neo .grid .dh .n{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}
+@media (max-width:1200px){.dn.neo .grid .dh .n{font-size:clamp(12px,1.25vw,15px);letter-spacing:-.01em}}
+.dn.neo .grid .dh.today .n::after{margin-left:0}
+/* ДЗ: кнопки файлов не шире карточки, длинный текст - многоточием */
+.dn.neo article.hw{min-width:0}.dn.neo article.hw :is(h3,p,b,span){overflow-wrap:anywhere}
+
+/* 4.5.4: карточка ДЗ - кнопки внизу одним блоком: файлы в ряд (тесно - друг под другом), «Сдать задание» на всю ширину */
+.dn.neo .hw .hwft .hwact{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}
+.dn.neo .hw .hwfiles{display:grid;grid-template-columns:1fr;gap:8px}
+.dn.neo .hw .hwfiles.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.dn.neo .hw .hwact :is(a,.submit){display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:42px;margin:0;padding:9px 14px;border-radius:14px;font-size:13.5px;line-height:1.2;text-align:center;white-space:normal}
+.dn.neo .hw .hwact :is(a,.submit) span{min-width:0}
+.dn.neo .hw .hwact .submit{width:100%;flex:none;border-radius:14px}
+.dn.neo .hw .submit::after{display:none}
+
+/* 4.5.5: срок и преподаватель - одна строка, имя преподавателя сжимается многоточием (без «лесенки») */
+.dn.neo .hw .hwft .early{display:flex;align-items:baseline;gap:12px;flex-wrap:nowrap;padding:12px 16px}
+.dn.neo .hw .hwft .early>span:first-child{flex:none;white-space:nowrap}
+.dn.neo .hw .hwft .early>.soft{flex:1 1 auto;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* кнопки ДЗ - одинаковые на всех экранах */
+.dn.neo .hw .hwact :is(a,.submit){flex:none;height:auto;min-height:40px;max-height:none;padding:9px 12px;font-size:13.5px}
+@media (max-width:760px){.dn.neo .hw .hwact :is(a,.submit){min-height:40px;padding:8px 10px;font-size:13px}.dn.neo .hw .hwfiles.two{grid-template-columns:1fr 1fr}}
+/* Safari: колонка кнопок без переноса - иначе iOS растягивает кнопки по высоте */
+.dn.neo .hw .hwft .hwact{flex-wrap:nowrap;align-items:stretch}
+.dn.neo .hw .hwft .hwact>*{flex:0 0 auto}
+.dn.neo .hw .hwfiles>a{flex:none;align-self:start}
+
+/* 4.5.6: значки статуса ДЗ на главной - цветной круг с иконкой у каждого состояния */
+.dn.neo .td-ck{width:24px;height:24px;margin-top:0;border:0;background:rgba(var(--acc-rgb),.16);color:var(--acc)}
+.dn.neo .td-ck svg{width:13px;height:13px;stroke-width:2.6}
+.dn.neo .td-row.late .td-ck{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.dn.neo .td-row.wait .td-ck{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.dn.neo .td-row.done .td-ck{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+/* 4.5.6: длинные слова (названия, темы, отзывы) переносятся и не вылезают за карточки */
+.dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) :is(div,b,span,h2,h3,h4,p,small,a){overflow-wrap:anywhere}
+.dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) > :is(div,span,b){min-width:0}
+.dn.neo .rv .tag,.dn.neo .card .nw .tx{max-width:100%}
+.dn.neo .hero.prof .hero-id>div:not(.photo){min-width:0;flex:1;max-width:100%;align-self:stretch}.dn.neo .hero.prof .facts{flex-wrap:wrap}.dn.neo .hero.prof .facts>*{min-width:0;max-width:100%}

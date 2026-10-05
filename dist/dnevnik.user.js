@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Дневник - новый дизайн журнала
 // @namespace    dnevnik.artem
-// @version      4.5.2
+// @version      4.5.6
 // @description  Полноценный дизайн "Дневника" поверх журнала: свои страницы, живые данные из журнала, мгновенная загрузка из кэша.
 // @match        https://journal.top-academy.ru/*
 // @run-at       document-start
@@ -25,6 +25,8 @@
 // @connect      api.kraken.com
 // @connect      www.cbr.ru
 // @connect      www.cbr-xml-daily.ru
+// @connect      cdn.jsdelivr.net
+// @connect      currency-api.pages.dev
 // @noframes
 // @updateURL    https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js
 // @downloadURL  https://gist.githubusercontent.com/havin8/1dfbe9d913d7e000c0de52ad11a9317f/raw/dnevnik.user.js
@@ -89,7 +91,7 @@
       const v = i && i.script && i.script.version;
       if (v && /^\d+(\.\d+)*$/.test(v)) return v;
     } catch (e) {}
-    return "4.5.2";
+    return "4.5.6";
   })();
 
   /* ======================= настройки и хранилище ======================= */
@@ -743,6 +745,16 @@ send("ready",{});
   /* ======================= новая версия Дневника ======================= */
   // что нового в текущей версии - показывается в Настройках
   const CHANGES = [
+    "Главная: у каждого задания свой значок - новое, просрочено, на проверке, оценено",
+    "Оценки: подписано, где средний балл за всё время, а где за эту неделю",
+    "Домашние задания: компактные кнопки на телефоне, срок и преподаватель в одну строку",
+    "Крипта в Safari: без ошибки Rapira, курс ЦБ подписан как курс ЦБ",
+    "Крипта в Safari (iPhone, iPad, Mac): курс доллара и график из источников, которые Safari разрешает",
+    "Домашние задания: кнопки файлов и «Сдать задание» внизу карточки, ровно и без обрезанного текста",
+    "Крипта: график доллара берётся из запасных источников, если сайт Банка России не отвечает (часто с VPN)",
+    "iPad: при наборе текста окно поднимается над клавиатурой и не прыгает при прокрутке",
+    "Расписание: метка «сегодня» не вылезает за колонку",
+    "Домашние задания: кнопки файлов не вылезают за карточку",
     "Короткие разделы (материалы, контакты, жалобы и др.) больше не прокручиваются в пустую чёрную полосу",
     "iPad: короткие разделы при прокрутке больше не сдвигают экран и не оставляют чёрную полосу",
     "Топкоины и топгемы - значками как в журнале",
@@ -858,18 +870,23 @@ send("ready",{});
     if (mkLoaded) return;
     mkLoaded = true;
     Object.assign(MKT, LS.get("mkt2", {}), LS.get("mkth", {}));
+    if (!NO_CORS_OK) {
+      MKT.rapErr = null;
+      MKT.usd = null;
+    }
   };
   function mkSave() {
     LS.set("mkt2", {
       usd: MKT.usd,
       cbr: MKT.cbr,
+      cbrSrc: MKT.cbrSrc,
       coins: MKT.coins,
       fng: MKT.fng,
       at: MKT.at,
       fngAt: MKT.fngAt,
       cbrAt: MKT.cbrAt,
       fail: MKT.fail,
-      rapErr: MKT.rapErr,
+      rapErr: NO_CORS_OK ? MKT.rapErr : null,
     });
     if (mkHistDirty) {
       mkHistDirty = false;
@@ -1060,18 +1077,91 @@ send("ready",{});
     if (out.length < 2) throw new Error("пусто");
     return out;
   }
+  // запасные источники истории: дни уже прошедшие не меняются - храним в кэше и докачиваем только новые
+  const dayKey = (d) =>
+    d.getFullYear() +
+    "/" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "/" +
+    String(d.getDate()).padStart(2, "0");
+  async function histByDays(cacheKey, url, pick, step) {
+    const cache = LS.get(cacheKey, {}),
+      now = Date.now(),
+      days = [];
+    for (let k = 0; k <= 94; k += step) days.push(new Date(now - k * 864e5));
+    const todo = days.filter((d) => !(dayKey(d) in cache));
+    for (let i = 0; i < todo.length; i += 6)
+      await Promise.all(
+        todo.slice(i, i + 6).map((d) =>
+          xget(url(d))
+            .then((j) => {
+              const v = pick(j);
+              if (v) cache[dayKey(d)] = v;
+              else if (now - d > 3 * 864e5) cache[dayKey(d)] = 0;
+            })
+            .catch((e) => {
+              if (/404/.test(String(e && e.message)) && now - d > 3 * 864e5) cache[dayKey(d)] = 0;
+            }),
+        ),
+      );
+    const keep = {};
+    days.forEach((d) => {
+      const k = dayKey(d);
+      if (k in cache) keep[k] = cache[k];
+    });
+    LS.set(cacheKey, keep);
+    const out = Object.entries(keep)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => {
+        const [y, m, d] = k.split("/").map(Number);
+        return [new Date(y, m - 1, d).getTime(), v];
+      })
+      .sort((a, b) => a[0] - b[0]);
+    if (out.length < 2) throw new Error("пусто");
+    return out;
+  }
+  const cbrArchive = () =>
+    histByDays(
+      "cbrd",
+      (d) => `https://www.cbr-xml-daily.ru/archive/${dayKey(d)}/daily_json.js`,
+      (j) => j && j.Valute && j.Valute.USD && mnum(j.Valute.USD.Value),
+      2,
+    );
+  const fxMarket = () =>
+    histByDays(
+      "fxd",
+      (d) =>
+        `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${dayKey(d).replace(/\//g, "-")}/v1/currencies/usd.min.json`,
+      (j) => j && j.usd && mnum(j.usd.rub),
+      3,
+    );
+  const NO_CORS_OK = HAS_UW && typeof GM_xmlhttpRequest === "function"; // Tampermonkey ходит куда угодно, Safari - только к сайтам с CORS
+  async function usdHistory() {
+    if (NO_CORS_OK)
+      try {
+        MKT.cbrSrc = "cbr";
+        return await cbrHistory();
+      } catch (e) {}
+    try {
+      MKT.cbrSrc = "cbr";
+      return await cbrArchive();
+    } catch (e) {}
+    MKT.cbrSrc = "fx";
+    return await fxMarket();
+  }
   async function marketLoad(force) {
     if (!CRYPTO || !cfg.mkt || mkBusy || (mkEnsure(), !force && Date.now() - MKT.at < 55e3)) return;
     mkBusy = true;
     const now = Date.now();
     let ok = 0;
     const jobs = [
-      rapiraLoad()
+      (NO_CORS_OK ? rapiraLoad() : Promise.reject(new Error("в Safari недоступна")))
         .then(() => {
           ok++;
         })
         .catch((e) => {
-          MKT.rapErr = { m: String(e.message || e).slice(0, 120), at: now };
+          MKT.rapErr = NO_CORS_OK ? { m: String(e.message || e).slice(0, 120), at: now } : null;
+          if (!NO_CORS_OK) MKT.usd = null;
         }),
       ...COINS.map(([t]) =>
         coinTicker(t)
@@ -1103,17 +1193,27 @@ send("ready",{});
           })
           .catch(() => {}),
       );
-    if (force || now - MKT.cbrAt > 3600e3)
+    if (force || now - MKT.cbrAt > (MKT.cbrHist && MKT.cbrHist.length > 1 ? 3600e3 : 120e3))
       jobs.push(
-        cbrHistory()
+        usdHistory()
           .then((h) => {
             MKT.cbrHist = h;
             mkHistDirty = true;
-            const a = h[h.length - 1],
-              b = h[h.length - 2];
-            MKT.cbr = { v: a[1], d: a[0], prev: b[1], pd: b[0] };
             MKT.cbrAt = now;
             ok++;
+            const a = h[h.length - 1],
+              b = h[h.length - 2];
+            if (MKT.cbrSrc !== "fx") {
+              MKT.cbr = { v: a[1], d: a[0], prev: b[1], pd: b[0] };
+              return;
+            }
+            return xget("https://www.cbr-xml-daily.ru/daily_json.js")
+              .then((j) => {
+                const u = j && j.Valute && j.Valute.USD;
+                if (u && mnum(u.Value))
+                  MKT.cbr = { v: mnum(u.Value), prev: mnum(u.Previous), d: Date.parse(j.Date) || now };
+              })
+              .catch(() => {});
           })
           .catch(() =>
             xget("https://www.cbr-xml-daily.ru/daily_json.js")
@@ -1128,6 +1228,23 @@ send("ready",{});
           ),
       );
     await Promise.all(jobs);
+    if (!MKT.cbr && !MKT.usd)
+      await xget("https://www.cbr-xml-daily.ru/daily_json.js")
+        .then((j) => {
+          const u = j && j.Valute && j.Valute.USD;
+          if (u && mnum(u.Value)) {
+            MKT.cbr = { v: mnum(u.Value), prev: mnum(u.Previous), d: Date.parse(j.Date) || now };
+            ok++;
+          }
+        })
+        .catch(() => {});
+    if (!MKT.cbr && !MKT.usd && (MKT.cbrHist || []).length > 1) {
+      const h = MKT.cbrHist,
+        x = h[h.length - 1],
+        y = h[h.length - 2];
+      MKT.cbr = { v: x[1], d: x[0], prev: y[1], pd: y[0], fx: true };
+    }
+    MKT.diag = `Крипта: курс ${MKT.usd ? "Rapira" : MKT.cbr ? "ЦБ" : "нет"} · график ${(MKT.cbrHist || []).length > 1 ? (MKT.cbrSrc === "fx" ? "рыночный" : "ЦБ") + " " + MKT.cbrHist.length + " дн." : "нет"} · монет ${Object.keys(MKT.coins || {}).length} · ${NO_CORS_OK ? "Tampermonkey" : "Safari"}${MKT.rapErr ? " · Rapira: " + MKT.rapErr.m : ""}`;
     if (ok) {
       MKT.at = now;
       MKT.fail = 0;
@@ -1293,13 +1410,18 @@ send("ready",{});
       return {
         v: c.v,
         ch: c.prev ? (c.v / c.prev - 1) * 100 : null,
-        src: "ЦБ РФ",
+        src: c.fx ? "рынок" : "ЦБ РФ",
         sub: c.d ? "курс на " + dm2(c.d) : "официальный курс",
-        note: MKT.rapErr
-          ? "Rapira сейчас не отвечает - показан курс ЦБ"
-          : c.prev
-            ? `${c.pd ? dm2(c.pd) : "до этого"} было ${fx(c.prev, 2)} ₽`
-            : "",
+        note:
+          MKT.rapErr && NO_CORS_OK
+            ? "Rapira сейчас не отвечает - показан курс ЦБ"
+            : c.fx
+              ? "рыночный курс доллара - ЦБ сейчас недоступен"
+              : !NO_CORS_OK
+                ? "официальный курс Банка России"
+                : c.prev
+                  ? `${c.pd ? dm2(c.pd) : "до этого"} было ${fx(c.prev, 2)} ₽`
+                  : "",
       };
     return null;
   }
@@ -1335,9 +1457,9 @@ send("ready",{});
           <div class="mk-mtop"><span class="mk-lbl">Доллар США</span><span class="mk-src">${U ? U.src + " · " + U.sub : "загрузка"}</span></div>
           <div class="mk-bigrow"><div class="mk-big num">${U ? mkRub(U.v) : "…"}</div>${chPill(U && U.ch)}</div>
           <div class="mk-bsub">${U && U.note ? esc(U.note) : "&nbsp;"}${spread != null ? `<span class="mk-dotsep"></span>ЦБ ${fx(c.v, 2)} ₽ · ${spread >= 0 ? "+" : "−"}${fx(Math.abs(spread), 2)}% к ЦБ` : ""}</div>
-          ${mkChart("usd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "big", fmt: (v) => fx(v, 2) + " ₽", empty: "Нет данных ЦБ для графика" })}
+          ${mkChart("usd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "big", fmt: (v) => fx(v, 2) + " ₽", empty: "График курса пока не загрузился - попробуй обновить или выключить VPN" })}
           <div class="mk-stats"><div><span>Макс.</span><b class="num">${st ? fx(st.mx, 2) + " ₽" : "-"}</b></div><div><span>Мин.</span><b class="num">${st ? fx(st.mn, 2) + " ₽" : "-"}</b></div>
-            <div><span>За ${MK_PER[mkPer].l}</span><b class="num ${pc == null ? "" : pc >= 0 ? "mup" : "mdn"}">${pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-"}</b></div><div class="mk-sfoot">график и мин./макс. - курс ЦБ по дням</div></div>
+            <div><span>За ${MK_PER[mkPer].l}</span><b class="num ${pc == null ? "" : pc >= 0 ? "mup" : "mdn"}">${pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-"}</b></div><div class="mk-sfoot">график и мин./макс. - ${MKT.cbrSrc === "fx" ? "рыночный курс по дням" : "курс ЦБ по дням"}</div></div>
         </div>
         <div class="mk-side">
           <div class="mk-list"><div class="mk-lh"><span>Монеты</span><span>${esc(srcs)} · за ${MK_PER[mkPer].l}</span></div>
@@ -1372,11 +1494,11 @@ send("ready",{});
         u = MKT.usd;
       head = `${coinIc("#3fb67e", "$")}<div class="mk-nm"><b>Доллар к рублю</b><span>${U ? U.src + " · " + U.sub : ""}</span></div>`;
       body = `<div class="mks-price"><b class="num">${U ? (U.src === "ЦБ РФ" ? fx(U.v, 4) + "<small>₽</small>" : mkRub(U.v)) : "-"}</b>${chPill(U && U.ch)}</div>
-        <div class="mks-sec">Rapira · USDT/RUB</div>
+        ${u || MKT.rapErr ? `<div class="mks-sec">Rapira · USDT/RUB</div>` : ""}
         ${u ? `<div class="mks-grid">${row("Покупка", u.bid ? fx(u.bid, 2) + " ₽" : "-")}${row("Продажа", u.ask ? fx(u.ask, 2) + " ₽" : "-")}${row("Макс. за сутки", u.hi ? fx(u.hi, 2) + " ₽" : "-")}${row("Мин. за сутки", u.lo ? fx(u.lo, 2) + " ₽" : "-")}</div>` : ""}
-        ${MKT.rapErr ? `<div class="mks-err">Rapira не ответила в ${hm2(MKT.rapErr.at)}: ${esc(MKT.rapErr.m)}</div>` : ""}
+        ${MKT.rapErr && NO_CORS_OK ? `<div class="mks-err">Rapira не ответила в ${hm2(MKT.rapErr.at)}: ${esc(MKT.rapErr.m)}</div>` : ""}
         <div class="mks-sec">Курс ЦБ РФ${c && c.d ? " на " + dm2(c.d) : ""}</div>${per()}
-        ${mkChart("dusd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "sheet", fmt: (v) => fx(v, 2) + " ₽", empty: "Нет данных ЦБ" })}
+        ${mkChart("dusd", ch, { col: "var(--gold)", area: 1, dot: 1, ticks: 5, w: 2.4, cls: "sheet", fmt: (v) => fx(v, 2) + " ₽", empty: "График курса пока не загрузился" })}
         <div class="mks-grid">${row("Курс ЦБ (точно)", c ? fx(c.v, 4) + " ₽" : "-")}${row("Прошлый курс" + (c && c.pd ? " (" + dm2(c.pd) + ")" : ""), c && c.prev ? fx(c.prev, 2) + " ₽" : "-")}${row("За " + MK_PER[mkPer].l, pc != null ? (pc >= 0 ? "+" : "−") + fx(Math.abs(pc), 2) + "%" : "-")}
         ${row("Макс. за " + MK_PER[mkPer].l, ch ? fx(Math.max(...ch.map((r) => r[1])), 2) + " ₽" : "-")}${row("Мин. за " + MK_PER[mkPer].l, ch ? fx(Math.min(...ch.map((r) => r[1])), 2) + " ₽" : "-")}${u && c ? row("Rapira к ЦБ", (u.v >= c.v ? "+" : "−") + fx(Math.abs(u.v / c.v - 1) * 100, 2) + "%") : ""}</div>`;
     } else if (k === "fng") {
@@ -4686,6 +4808,35 @@ dialog[open]{animation:dnin .2s ease}
 .dn:not([data-mc=true]) .coin,.dn:not([data-mc=true]) .gem{border-radius:0;box-shadow:none;clip-path:none;background:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI0ZGQjU0NyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM5IiBmaWxsPSIjRkY5NTAwIi8+PGcgZmlsbD0iI0ZGQzQ2QiI+PHBhdGggZD0iTTQyIDIyaDE0djM1YzAgNCAyIDYgNiA2aDZ2MTJoLTljLTExIDAtMTctNi0xNy0xN3oiLz48cmVjdCB4PSIzMiIgeT0iMzYiIHdpZHRoPSIzNCIgaGVpZ2h0PSIxMiIgcng9IjQiLz48L2c+PC9zdmc+) center/contain no-repeat}
 .dn:not([data-mc=true]) .gem{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBCM0YwQiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQyIiBmaWxsPSIjMkE3QTAwIi8+PHBvbHlnb24gcG9pbnRzPSI1MC4wLDI5LjAgNTAuMCw4LjAgODIuOCwyMy44IDY2LjQsMzYuOSIgZmlsbD0iIzdDQzgwMCIvPjxwb2x5Z29uIHBvaW50cz0iNjYuNCwzNi45IDgyLjgsMjMuOCA5MC45LDU5LjMgNzAuNSw1NC43IiBmaWxsPSIjNUVBRDAwIi8+PHBvbHlnb24gcG9pbnRzPSI3MC41LDU0LjcgOTAuOSw1OS4zIDY4LjIsODcuOCA1OS4xLDY4LjkiIGZpbGw9IiMzRTkyMDAiLz48cG9seWdvbiBwb2ludHM9IjU5LjEsNjguOSA2OC4yLDg3LjggMzEuOCw4Ny44IDQwLjksNjguOSIgZmlsbD0iIzJBN0EwMCIvPjxwb2x5Z29uIHBvaW50cz0iNDAuOSw2OC45IDMxLjgsODcuOCA5LjEsNTkuMyAyOS41LDU0LjciIGZpbGw9IiMxRjZCMDAiLz48cG9seWdvbiBwb2ludHM9IjI5LjUsNTQuNyA5LjEsNTkuMyAxNy4yLDIzLjggMzMuNiwzNi45IiBmaWxsPSIjM0U5MjAwIi8+PHBvbHlnb24gcG9pbnRzPSIzMy42LDM2LjkgMTcuMiwyMy44IDUwLjAsOC4wIDUwLjAsMjkuMCIgZmlsbD0iIzZCQkEwMCIvPjxwb2x5Z29uIHBvaW50cz0iNTAuMCwyOS4wIDY2LjQsMzYuOSA3MC41LDU0LjcgNTkuMSw2OC45IDQwLjksNjguOSAyOS41LDU0LjcgMzMuNiwzNi45IiBmaWxsPSIjOTRFMDAwIi8+PC9zdmc+)}
 :host>.dn{min-height:calc(100% + 1px)!important}
+:host([data-kb]) .dn dialog[open]{margin-top:12px;margin-bottom:auto;max-height:calc(100dvh - var(--kb,0px) - 24px);overflow:auto;-webkit-overflow-scrolling:touch}
+.dn.neo .grid .dh .n{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}
+@media (max-width:1200px){.dn.neo .grid .dh .n{font-size:clamp(12px,1.25vw,15px);letter-spacing:-.01em}}
+.dn.neo .grid .dh.today .n::after{margin-left:0}
+.dn.neo article.hw{min-width:0}.dn.neo article.hw :is(h3,p,b,span){overflow-wrap:anywhere}
+.dn.neo .hw .hwft .hwact{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}
+.dn.neo .hw .hwfiles{display:grid;grid-template-columns:1fr;gap:8px}
+.dn.neo .hw .hwfiles.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.dn.neo .hw .hwact :is(a,.submit){display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:42px;margin:0;padding:9px 14px;border-radius:14px;font-size:13.5px;line-height:1.2;text-align:center;white-space:normal}
+.dn.neo .hw .hwact :is(a,.submit) span{min-width:0}
+.dn.neo .hw .hwact .submit{width:100%;flex:none;border-radius:14px}
+.dn.neo .hw .submit::after{display:none}
+.dn.neo .hw .hwft .early{display:flex;align-items:baseline;gap:12px;flex-wrap:nowrap;padding:12px 16px}
+.dn.neo .hw .hwft .early>span:first-child{flex:none;white-space:nowrap}
+.dn.neo .hw .hwft .early>.soft{flex:1 1 auto;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dn.neo .hw .hwact :is(a,.submit){flex:none;height:auto;min-height:40px;max-height:none;padding:9px 12px;font-size:13.5px}
+@media (max-width:760px){.dn.neo .hw .hwact :is(a,.submit){min-height:40px;padding:8px 10px;font-size:13px}.dn.neo .hw .hwfiles.two{grid-template-columns:1fr 1fr}}
+.dn.neo .hw .hwft .hwact{flex-wrap:nowrap;align-items:stretch}
+.dn.neo .hw .hwft .hwact>*{flex:0 0 auto}
+.dn.neo .hw .hwfiles>a{flex:none;align-self:start}
+.dn.neo .td-ck{width:24px;height:24px;margin-top:0;border:0;background:rgba(var(--acc-rgb),.16);color:var(--acc)}
+.dn.neo .td-ck svg{width:13px;height:13px;stroke-width:2.6}
+.dn.neo .td-row.late .td-ck{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.dn.neo .td-row.wait .td-ck{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.dn.neo .td-row.done .td-ck{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) :is(div,b,span,h2,h3,h4,p,small,a){overflow-wrap:anywhere}
+.dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) > :is(div,span,b){min-width:0}
+.dn.neo .rv .tag,.dn.neo .card .nw .tx{max-width:100%}
+.dn.neo .hero.prof .hero-id>div:not(.photo){min-width:0;flex:1;max-width:100%;align-self:stretch}.dn.neo .hero.prof .facts{flex-wrap:wrap}.dn.neo .hero.prof .facts>*{min-width:0;max-width:100%}
 `;
   const IC = {
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -5211,13 +5362,46 @@ dialog[open]{animation:dnin .2s ease}
     };
     requestAnimationFrame(tick);
   }
+  // идёт набор текста (открыта клавиатура): поле в Дневнике или в окне журнала
+  const typing = () => {
+    const isEd = (a) =>
+      a &&
+      ((/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) &&
+        !/^(checkbox|radio|button|submit|file|range)$/i.test(a.type || "")) ||
+        a.isContentEditable);
+    return isEd(R && R.activeElement) || isEd(document.activeElement);
+  };
+  // высота клавиатуры: окно Дневника поднимается над ней (iPad, iPhone)
+  function kbFit() {
+    if (!host || !W.visualViewport) return;
+    const vv = W.visualViewport,
+      kb = Math.max(0, Math.round(W.innerHeight - vv.height - vv.offsetTop));
+    if (kb > 80 && typing()) {
+      host.setAttribute("data-kb", "");
+      host.style.setProperty("--kb", kb + "px");
+    } else {
+      host.removeAttribute("data-kb");
+      host.style.removeProperty("--kb");
+    }
+  }
+  if (W.visualViewport) {
+    W.visualViewport.addEventListener("resize", kbFit);
+    W.visualViewport.addEventListener("scroll", kbFit);
+  }
+  document.addEventListener("focusin", () => setTimeout(kbFit, 300));
+  document.addEventListener("focusout", () => setTimeout(kbFit, 300));
   function mount() {
     dropVeil();
     if (host) return;
     if (!W.__dnScrollLock) {
       W.__dnScrollLock = 1;
       const fix = () => {
-        if (host && document.documentElement.classList.contains("dn-on") && (W.scrollY || W.scrollX))
+        if (
+          host &&
+          document.documentElement.classList.contains("dn-on") &&
+          !typing() &&
+          (W.scrollY || W.scrollX)
+        )
           W.scrollTo(0, 0);
       };
       W.addEventListener("scroll", fix, { passive: true });
@@ -5773,7 +5957,7 @@ dialog[open]{animation:dnin .2s ease}
               : `<span class="td-tag c">до ${h.due ? dm(fromIso(h.due)) : "-"}</span>`;
     };
     const row = (h) =>
-      `<button class="td-row ${h.status}" data-page="homework"><span class="td-ck">${h.status === "done" ? ic("check") : h.status === "wait" ? ic("clock") : ""}</span><span class="td-tx"><b>${esc(h.theme || "Домашнее задание")}</b><span>${esc(subjShort(h.subj))}${tag(h)}</span></span></button>`;
+      `<button class="td-row ${h.status}" data-page="homework"><span class="td-ck">${h.status === "done" ? ic("check") : h.status === "wait" ? ic("clock") : h.status === "late" ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 6.5v7M12 17.6v.01"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>'}</span><span class="td-tx"><b>${esc(h.theme || "Домашнее задание")}</b><span>${esc(subjShort(h.subj))}${tag(h)}</span></span></button>`;
     const ex = M.exams || [];
     return `<div class="td-list">${L.map(row).join("") || `<p class="note">Заданий пока нет</p>`}</div>
       <div class="td-foot"><span>${ic("check")}Формы контроля: <b>${ex.length ? ex.map((x) => esc(x.subj) + (x.date ? " · " + dm(fromIso(x.date)) : "")).join(", ") : "предстоящих нет"}</b></span>${s.hwCount ? `<span>${ic("timer")}Сдаёшь заранее: <b class="num">${f1(s.earlyAvg)} дн.</b></span>` : ""}</div>`;
@@ -6712,7 +6896,7 @@ dialog[open]{animation:dnin .2s ease}
     return `
     ${summaryMonths().length ? `<div class="card hint">${ic("star")}<div><b>Итоги месяца</b><span>Оценки, посещаемость, серии и календарь - за каждый месяц</span></div><button class="m-btn pri" data-act="month">Открыть</button></div>` : ""}
     <div class="row r4">
-      <div class="card kpi"><div class="lab">${ic("star")}Средний балл</div><div class="val num">${s.marks ? f2(s.avg) : "-"}</div><div class="sub">${s.allTop ? `все <b class="num">${s.marks}</b> оценок - «${s.maxMark}»` : `по <b class="num">${s.marks}</b> оценкам`}</div></div>
+      <div class="card kpi"><div class="lab">${ic("star")}Средний балл</div><div class="val num">${s.marks ? f2(s.avg) : "-"}</div><div class="sub">${s.allTop ? `все <b class="num">${s.marks}</b> оценок - «${s.maxMark}»` : `за всё время · <b class="num">${s.marks}</b> ${plural(s.marks, "оценка", "оценки", "оценок")}`}</div></div>
       <div class="card kpi"><div class="lab">${ic("hw")}За домашние</div><div class="val num">${s.hwN}</div><div class="sub">оценок за ДЗ</div></div>
       <div class="card kpi"><div class="lab">${ic("users")}За работу на паре</div><div class="val num">${s.cwN}</div><div class="sub">оценок за классную работу${
         s.otherN
@@ -6886,7 +7070,7 @@ dialog[open]{animation:dnin .2s ease}
         ? ""
         : ` <small class="dlt">${d > 0 ? "▲" : d < 0 ? "▼" : ""} ${f(Math.abs(d))} за ${mode === "month" ? "месяц" : "неделю"}</small>`;
     return `<section class="card avgc">${head}
-      <div class="avg-kpis"><span><i style="background:var(--gcol)"></i>Средний балл<b class="num">${lastG != null ? f2(lastG) : "-"}</b>${tr(dG, f2)}</span><span><i style="background:var(--att)"></i>Посещаемость<b class="num ${attCls(lastA)}">${lastA != null ? Math.round(lastA) + "%" : "-"}</b>${tr(dA, (x) => Math.round(x) + "%")}</span></div>
+      <div class="avg-kpis"><span><i style="background:var(--gcol)"></i>Средний балл за ${mode === "month" ? "месяц" : "неделю"}<b class="num">${lastG != null ? f2(lastG) : "-"}</b>${tr(dG, f2)}</span><span><i style="background:var(--att)"></i>Посещаемость за ${mode === "month" ? "месяц" : "неделю"}<b class="num ${attCls(lastA)}">${lastA != null ? Math.round(lastA) + "%" : "-"}</b>${tr(dA, (x) => Math.round(x) + "%")}</span></div>
       <svg viewBox="0 0 ${Wd} ${H}" preserveAspectRatio="xMidYMid meet" style="height:${H}px" role="img" aria-label="Средний балл и посещаемость">${grid}${body}${xl}</svg>
       <div class="legend"><span><i style="background:var(--gcol)"></i>средний балл - левая шкала</span><span><i style="background:var(--att)"></i>посещаемость - правая шкала</span></div></section>`;
   }
@@ -7144,9 +7328,24 @@ dialog[open]{animation:dnin .2s ease}
       const nw = HK.has(h) && isNew("homework", HK.get(h));
       return `<article class="hw s-${subjKey(h.subj)} ${nw ? "isnew" : ""} ${h.status === "cur" && left != null && left <= 0 ? "dueday" : ""}"><div class="top2"><div><b>${esc(h.subj)}</b>${h.lab ? '<span class="labtag">лабораторная</span>' : ""}${h.removed ? '<span class="labtag rm">удалено преподавателем</span>' : ""}${nw ? `<span class="newtag">${h.status === "done" ? "оценка" : "новое"}</span>` : ""}${h.theme ? `<div class="th2">${esc(h.theme)}</div>` : ""}</div>${badge}</div>
         <div class="foot"><div>Срок<b class="num">${h.due ? dm(fromIso(h.due)) : "-"}</b></div><div>Сдано<b class="num">${h.sub ? dm(fromIso(h.sub)) : "-"}</b></div></div>
-        <div class="hwb">${h.task ? `<div class="hwx ${h.task.length > 160 ? "clamp" : ""}" ${h.task.length > 160 ? 'data-hwx="1"' : ""}><span>Задание</span><p>${esc(h.task)}</p></div>` : ""}${h.answer ? `<div class="hwx ans"><span>Мой ответ</span><p>${/^https?:/.test(h.answer) ? `<a href="${esc(h.answer)}" target="_blank" rel="noopener">${esc(h.answer.replace(/^https?:\/\//, "").slice(0, 40))}…</a>` : esc(h.answer)}</p></div>` : ""}${h.teacherComment ? `<div class="hwx tc"><span>Комментарий преподавателя${h.checked ? ` · ${dm(fromIso(h.checked))}` : ""}</span><p>${esc(h.teacherComment)}</p></div>` : ""}${h.taskFile || h.myFile ? `<div class="hwact">${h.taskFile ? `<a href="${esc(h.taskFile)}" target="_blank" rel="noopener">${ic("hw")}Файл задания</a>` : ""}${h.myFile ? `<a href="${esc(h.myFile)}" target="_blank" rel="noopener">${ic("upload")}Мой файл</a>` : ""}</div>` : ""}</div>
+        <div class="hwb">${h.task ? `<div class="hwx ${h.task.length > 160 ? "clamp" : ""}" ${h.task.length > 160 ? 'data-hwx="1"' : ""}><span>Задание</span><p>${esc(h.task)}</p></div>` : ""}${h.answer ? `<div class="hwx ans"><span>Мой ответ</span><p>${/^https?:/.test(h.answer) ? `<a href="${esc(h.answer)}" target="_blank" rel="noopener">${esc(h.answer.replace(/^https?:\/\//, "").slice(0, 40))}…</a>` : esc(h.answer)}</p></div>` : ""}${h.teacherComment ? `<div class="hwx tc"><span>Комментарий преподавателя${h.checked ? ` · ${dm(fromIso(h.checked))}` : ""}</span><p>${esc(h.teacherComment)}</p></div>` : ""}</div>
         <div class="hwft"><div class="early">${foot}${h.teacher ? `<span class="soft">${esc(shortT(h.teacher))}</span>` : ""}</div>
-        ${(h.status === "cur" || h.status === "late") && !h.removed ? `<div class="hwact"><button class="submit" data-hwf="${esc(hwRef(h))}">${ic("upload")}Сдать задание</button></div>` : ""}</div></article>`;
+        ${(() => {
+          const files =
+              (h.taskFile
+                ? `<a href="${esc(h.taskFile)}" target="_blank" rel="noopener">${ic("hw")}<span>Файл задания</span></a>`
+                : "") +
+              (h.myFile
+                ? `<a href="${esc(h.myFile)}" target="_blank" rel="noopener">${ic("upload")}<span>Мой файл</span></a>`
+                : ""),
+            sub =
+              (h.status === "cur" || h.status === "late") && !h.removed
+                ? `<button class="submit" data-hwf="${esc(hwRef(h))}">${ic("upload")}<span>Сдать задание</span></button>`
+                : "";
+          return files || sub
+            ? `<div class="hwact">${files ? `<div class="hwfiles ${h.taskFile && h.myFile ? "two" : ""}">${files}</div>` : ""}${sub}</div>`
+            : "";
+        })()}</div></article>`;
     };
     // новое - первым в своей группе, а группы с новым - выше остальных (не надо листать)
     const isNw = (h) => HK.has(h) && isNew("homework", HK.get(h));
@@ -9870,6 +10069,7 @@ dialog[open]{animation:dnin .2s ease}
     const lines = [`Запросы: ${okN} из ${ks.length} успешно`].concat(
       ks.filter((k) => NET.status[k] !== 200).map((k) => `  ✗ ${k}: ${NET.status[k]}`),
     );
+    if (CRYPTO && cfg.mkt && MKT.diag) lines.push(MKT.diag);
     if (NET.viewErr) lines.push("Раздел не открылся: " + NET.viewErr);
     if (NET.clearedLayers) lines.push("Убрано прозрачных слоёв журнала: " + NET.clearedLayers);
     return (
@@ -10954,6 +11154,7 @@ dialog[open]{animation:dnin .2s ease}
           if (
             host &&
             document.documentElement.classList.contains("dn-on") &&
+            !typing() &&
             (W.scrollY || W.scrollX || W.visualViewport.offsetTop)
           )
             W.scrollTo(0, 0);
