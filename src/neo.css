@@ -264,7 +264,7 @@
 /* сегодняшний день: тонкая рамка акцента вокруг всей колонки, без заливки */
 .dn.neo .grid .dh.today{box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55),inset 0 1.5px 0 rgba(var(--acc-rgb),.55);border-radius:0;background:linear-gradient(180deg,rgba(var(--acc-rgb),.12),transparent)}
 .dn.neo .grid .dh.today::after{display:none}
-.dn.neo .grid .dh.today .n::after{content:"сегодня";margin-left:8px;padding:2px 8px;border-radius:999px;font:600 10.5px var(--fb);letter-spacing:.04em;vertical-align:2px;background:rgba(var(--acc-rgb),.2);color:var(--acc-t)}
+.dn.neo .grid .dh.today .n::after{content:none;display:none;margin-left:8px;padding:2px 8px;border-radius:999px;font:600 10.5px var(--fb);letter-spacing:.04em;vertical-align:2px;background:rgba(var(--acc-rgb),.2);color:var(--acc-t)}
 .dn.neo :is(.cell,.th){border-color:#181818!important}
 .dn.neo .cell.today{background:none;box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55)}
 .dn.neo .hatch{background:repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)}
@@ -456,7 +456,7 @@
 /* расписание на телефоне: сегодняшний день - рамка акцента и метка */
 .dn.neo .aday.today{border-color:rgba(var(--acc-rgb),.6);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.08),0 20px 50px -30px rgba(var(--acc-rgb),.8)}
 .dn.neo .aday.today h3{color:var(--acc-t)}
-.dn.neo .aday.today h3::before{content:"Сегодня";order:-1;flex-basis:100%;font:600 11px var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-t);opacity:.85}
+.dn.neo .aday.today h3::before{content:none;display:none;order:-1;flex-basis:100%;font:600 11px var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-t);opacity:.85}
 .dn.neo .aday h3{border-bottom-color:#1c1c1c}
 /* выходные: мягкая штриховка, уходящая в прозрачность, и аккуратная метка */
 .dn.neo .hatch{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 70%),repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 1px,transparent 1px 12px)!important;border-radius:16px;margin:6px}
@@ -722,3 +722,34 @@
 .dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) > :is(div,span,b){min-width:0}
 .dn.neo .rv .tag,.dn.neo .card .nw .tx{max-width:100%}
 .dn.neo .hero.prof .hero-id>div:not(.photo){min-width:0;flex:1;max-width:100%;align-self:stretch}.dn.neo .hero.prof .facts{flex-wrap:wrap}.dn.neo .hero.prof .facts>*{min-width:0;max-width:100%}
+
+/* 4.5.7: настройки - «Внешний вид» плитками: подпись сверху, варианты прямо под ней */
+.dn.neo .set-look .hd small{color:var(--soft)}
+@media (min-width:761px){
+  .dn.neo .set-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .dn.neo .set-tiles .set-row:last-child:nth-child(even){grid-column:1/-1}
+  .dn.neo .set-tiles .set-row{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;padding:16px 18px;border:1.5px solid #1f1f1f!important;border-radius:18px;background:rgba(255,255,255,.02)}
+  .dn.neo .set-tiles .set-row>span{font-weight:600;color:var(--ink)}
+  .dn.neo .set-tiles .set-row.wide{grid-column:1/-1}
+  .dn.neo .set-tiles .set-row .pill{flex-wrap:wrap}
+  .dn.neo .set-data{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) ;column-gap:24px;align-items:center}
+  .dn.neo .set-data>.hd{grid-column:1/-1}
+  .dn.neo .set-data>.btns{grid-column:1/-1;margin-top:6px}
+  .dn.neo .set-data>.set-row{border-top:1px solid #1c1c1c!important}
+}
+.dn.neo .ver-more{margin-top:8px}
+.dn.neo .ver-more summary{cursor:pointer;color:var(--acc-t);font-size:13.5px;font-weight:600;list-style:none}
+.dn.neo .ver-more summary::-webkit-details-marker{display:none}
+.dn.neo .ver-more ul{margin-top:8px}
+/* Крипта: правая колонка тянется до высоты левой, список монет занимает остаток */
+.dn.neo .mkt .mk-side{display:flex;flex-direction:column;align-self:stretch}
+.dn.neo .mkt .mk-side>.mk-list{flex:1 1 auto;display:flex;flex-direction:column}
+.dn.neo .mkt .mk-side>.mk-list>.mk-row,.dn.neo .mkt .mk-side>.mk-list>button{flex:1 1 auto}
+/* Личный кабинет на телефоне: фото, группа, имя и плашки - по центру */
+@media (max-width:760px){
+  .dn.neo .hero.prof .hero-id{flex-direction:column;align-items:center;text-align:center}
+  .dn.neo .hero.prof .hero-id>div:not(.photo){align-self:stretch;text-align:center}
+  .dn.neo .hero.prof :is(h2,.cap){text-align:center!important;padding-left:0!important;padding-right:0!important}
+  .dn.neo .hero.prof .hero-id>div:not(.photo)>*{margin-left:auto;margin-right:auto}
+  .dn.neo .hero.prof .facts{justify-content:center}
+}

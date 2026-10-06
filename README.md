@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/версия-4.5.6_бета-e8bf6a?style=for-the-badge&labelColor=141414" alt="Версия 4.5.6, бета">
+  <img src="https://img.shields.io/badge/версия-4.5.7_бета-e8bf6a?style=for-the-badge&labelColor=141414" alt="Версия 4.5.7, бета">
   <img src="https://img.shields.io/badge/ПК_·_iPhone_·_Mac_·_Android-141414?style=for-the-badge" alt="ПК, iPhone, Mac, Android">
   <img src="https://img.shields.io/badge/лицензия-MIT-c08a2e?style=for-the-badge&labelColor=141414" alt="Лицензия MIT">
 </p>

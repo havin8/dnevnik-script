@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Дневник - новый дизайн журнала
 // @namespace    dnevnik.artem
-// @version      4.5.6
+// @version      4.5.7
 // @description  Полноценный дизайн "Дневника" поверх журнала: свои страницы, живые данные из журнала, мгновенная загрузка из кэша.
 // @match        https://journal.top-academy.ru/*
 // @run-at       document-start
@@ -91,7 +91,7 @@
       const v = i && i.script && i.script.version;
       if (v && /^\d+(\.\d+)*$/.test(v)) return v;
     } catch (e) {}
-    return "4.5.6";
+    return "4.5.7";
   })();
 
   /* ======================= настройки и хранилище ======================= */
@@ -745,6 +745,11 @@ send("ready",{});
   /* ======================= новая версия Дневника ======================= */
   // что нового в текущей версии - показывается в Настройках
   const CHANGES = [
+    "Настройки: внешний вид - плитками на всю ширину, данные отдельной карточкой",
+    "Крипта: правая колонка по высоте левой, без пустого места",
+    "Личный кабинет на телефоне: всё по центру",
+    "Расписание: без метки «сегодня» - день и так подсвечен",
+    "«Сдаёшь заранее»: видно, по скольким заданиям считается",
     "Главная: у каждого задания свой значок - новое, просрочено, на проверке, оценено",
     "Оценки: подписано, где средний балл за всё время, а где за эту неделю",
     "Домашние задания: компактные кнопки на телефоне, срок и преподаватель в одну строку",
@@ -4467,7 +4472,7 @@ dialog[open]{animation:dnin .2s ease}
 .dn.neo .grid .dh.today .n{color:var(--acc-t)}
 .dn.neo .grid .dh.today{box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55),inset 0 1.5px 0 rgba(var(--acc-rgb),.55);border-radius:0;background:linear-gradient(180deg,rgba(var(--acc-rgb),.12),transparent)}
 .dn.neo .grid .dh.today::after{display:none}
-.dn.neo .grid .dh.today .n::after{content:"сегодня";margin-left:8px;padding:2px 8px;border-radius:999px;font:600 10.5px var(--fb);letter-spacing:.04em;vertical-align:2px;background:rgba(var(--acc-rgb),.2);color:var(--acc-t)}
+.dn.neo .grid .dh.today .n::after{content:none;display:none;margin-left:8px;padding:2px 8px;border-radius:999px;font:600 10.5px var(--fb);letter-spacing:.04em;vertical-align:2px;background:rgba(var(--acc-rgb),.2);color:var(--acc-t)}
 .dn.neo :is(.cell,.th){border-color:#181818!important}
 .dn.neo .cell.today{background:none;box-shadow:inset 1.5px 0 0 rgba(var(--acc-rgb),.55),inset -1.5px 0 0 rgba(var(--acc-rgb),.55)}
 .dn.neo .hatch{background:repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)}
@@ -4629,7 +4634,7 @@ dialog[open]{animation:dnin .2s ease}
 @media (max-width:760px){.dn.neo .feedfit{min-height:0}.dn.neo .feedfit>.list{position:static}}
 .dn.neo .aday.today{border-color:rgba(var(--acc-rgb),.6);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.08),0 20px 50px -30px rgba(var(--acc-rgb),.8)}
 .dn.neo .aday.today h3{color:var(--acc-t)}
-.dn.neo .aday.today h3::before{content:"Сегодня";order:-1;flex-basis:100%;font:600 11px var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-t);opacity:.85}
+.dn.neo .aday.today h3::before{content:none;display:none;order:-1;flex-basis:100%;font:600 11px var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-t);opacity:.85}
 .dn.neo .aday h3{border-bottom-color:#1c1c1c}
 .dn.neo .hatch{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 70%),repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 1px,transparent 1px 12px)!important;border-radius:16px;margin:6px}
 .dn.neo .hatch span{background:#0e0e0e;border:1px solid #262626;color:#8a8a92;font-size:12px;letter-spacing:.06em;padding:8px 6px}
@@ -4837,6 +4842,33 @@ dialog[open]{animation:dnin .2s ease}
 .dn.neo :is(.now,.hero.prof,.rv,article.hw .top2,.card .nw) > :is(div,span,b){min-width:0}
 .dn.neo .rv .tag,.dn.neo .card .nw .tx{max-width:100%}
 .dn.neo .hero.prof .hero-id>div:not(.photo){min-width:0;flex:1;max-width:100%;align-self:stretch}.dn.neo .hero.prof .facts{flex-wrap:wrap}.dn.neo .hero.prof .facts>*{min-width:0;max-width:100%}
+.dn.neo .set-look .hd small{color:var(--soft)}
+@media (min-width:761px){
+  .dn.neo .set-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .dn.neo .set-tiles .set-row:last-child:nth-child(even){grid-column:1/-1}
+  .dn.neo .set-tiles .set-row{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;padding:16px 18px;border:1.5px solid #1f1f1f!important;border-radius:18px;background:rgba(255,255,255,.02)}
+  .dn.neo .set-tiles .set-row>span{font-weight:600;color:var(--ink)}
+  .dn.neo .set-tiles .set-row.wide{grid-column:1/-1}
+  .dn.neo .set-tiles .set-row .pill{flex-wrap:wrap}
+  .dn.neo .set-data{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) ;column-gap:24px;align-items:center}
+  .dn.neo .set-data>.hd{grid-column:1/-1}
+  .dn.neo .set-data>.btns{grid-column:1/-1;margin-top:6px}
+  .dn.neo .set-data>.set-row{border-top:1px solid #1c1c1c!important}
+}
+.dn.neo .ver-more{margin-top:8px}
+.dn.neo .ver-more summary{cursor:pointer;color:var(--acc-t);font-size:13.5px;font-weight:600;list-style:none}
+.dn.neo .ver-more summary::-webkit-details-marker{display:none}
+.dn.neo .ver-more ul{margin-top:8px}
+.dn.neo .mkt .mk-side{display:flex;flex-direction:column;align-self:stretch}
+.dn.neo .mkt .mk-side>.mk-list{flex:1 1 auto;display:flex;flex-direction:column}
+.dn.neo .mkt .mk-side>.mk-list>.mk-row,.dn.neo .mkt .mk-side>.mk-list>button{flex:1 1 auto}
+@media (max-width:760px){
+  .dn.neo .hero.prof .hero-id{flex-direction:column;align-items:center;text-align:center}
+  .dn.neo .hero.prof .hero-id>div:not(.photo){align-self:stretch;text-align:center}
+  .dn.neo .hero.prof :is(h2,.cap){text-align:center!important;padding-left:0!important;padding-right:0!important}
+  .dn.neo .hero.prof .hero-id>div:not(.photo)>*{margin-left:auto;margin-right:auto}
+  .dn.neo .hero.prof .facts{justify-content:center}
+}
 `;
   const IC = {
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -7374,7 +7406,7 @@ dialog[open]{animation:dnin .2s ease}
       <div class="card kpi"><div class="lab">${ic("hw")}Всего заданий</div><div class="val num">${all}</div><div class="sub">новых <b class="num">${c.cur}</b>, просрочено <b class="num">${c.late}</b></div></div>
       <div class="card kpi"><div class="lab">${ic("check")}Проверено</div><div class="val num">${c.done}</div><div class="meter"><i style="width:${all ? (c.done / all) * 100 : 0}%"></i></div><div class="sub"><b class="num">${all ? Math.round((c.done / all) * 100) : 0}%</b> от всех заданий</div></div>
       <div class="card kpi"><div class="lab">${ic("clock")}На проверке</div><div class="val num">${c.wait}</div><div class="sub">у преподавателей</div></div>
-      <div class="card kpi"><div class="lab">${ic("timer")}Сдаёшь заранее</div><div class="val num">${s.hwCount ? f1(s.earlyAvg) : "-"}<small>дн.</small></div><div class="sub">${s.hwCount ? `<b class="num">${s.onTime}</b> из ${s.hwCount} сданы вовремя` : ""}</div></div></div>
+      <div class="card kpi"><div class="lab">${ic("timer")}Сдаёшь заранее</div><div class="val num">${s.hwCount ? f1(s.earlyAvg) : "-"}<small>дн.</small></div><div class="sub">${s.hwCount ? `в среднем по <b class="num">${s.hwCount}</b> ${plural(s.hwCount, "сданному", "сданным", "сданным")} · <b class="num">${s.onTime}</b> вовремя` : ""}</div></div></div>
       <div class="card hint">${ic("upload")}<div><b>Сдать задание</b><span>Кнопка «Сдать задание» на карточке: выбери файл или напиши ответ, Дневник сам отправит его в журнал</span></div></div>
       <div class="bar-tools"><div class="grp"><select class="sel" id="hwsubj"><option value="">Все предметы</option>${subs.map((x) => `<option ${hwq === norm(x) ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div><span class="note">Показано ${(M.hw || []).length} из ${all}</span></div>
       ${groups}`;
@@ -7827,7 +7859,17 @@ dialog[open]{animation:dnin .2s ease}
     return `<section class="card ver"><div class="ver-top"><div class="ver-ic">${ic("book", "i big")}</div><div class="grow"><span class="cap">Дневник</span><b class="num">Версия ${VERSION}</b>
         <span class="soft">${newer ? `доступна ${esc(upd.v)}` : upd && upd.v ? "у тебя последняя версия" : "проверка обновлений ещё не проходила"}${chkAt ? ` · проверено ${sameDay(new Date(chkAt), new Date()) ? "сегодня в " + new Date(chkAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) : dm(new Date(chkAt))}` : ""}</span></div>
         ${newer ? `<a class="m-btn pri" href="${UPD_URL}" target="_blank" rel="noopener" data-act="updgo">${ic("download")}Обновить до ${esc(upd.v)}</a>` : `<button class="m-btn" data-act="updcheck">${ic("refresh")}Проверить обновления</button>`}</div>
-      <div class="ver-new"><span>Что нового</span><ul>${CHANGES.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div></section>
+      <div class="ver-new"><span>Что нового</span><ul>${CHANGES.slice(0, 6)
+        .map((c) => `<li>${esc(c)}</li>`)
+        .join("")}</ul>${
+        CHANGES.length > 6
+          ? `<details class="ver-more"><summary>Ещё ${CHANGES.length - 6} ${plural(CHANGES.length - 6, "изменение", "изменения", "изменений")}</summary><ul>${CHANGES.slice(
+              6,
+            )
+              .map((c) => `<li>${esc(c)}</li>`)
+              .join("")}</ul></details>`
+          : ""
+      }</div></section>
     <section class="card"><div class="hd"><h2>Разделы в меню</h2><small>Выключенный раздел пропадает из меню</small></div>
       <div class="set-grid">${PAGES.filter((p) => !["home", "settings"].includes(p.id))
         .map(
@@ -7835,19 +7877,18 @@ dialog[open]{animation:dnin .2s ease}
             `<label class="sw"><input type="checkbox" data-hide="${p.id}" ${cfg.hidden.includes(p.id) ? "" : "checked"}><span class="tr"></span>${ic(p.ic)}<span>${esc(p.n)}</span></label>`,
         )
         .join("")}</div></section>
-    <div class="row r2">
-      <section class="card"><div class="hd"><h2>Внешний вид</h2></div>
+      <section class="card set-look"><div class="hd"><h2>Внешний вид</h2><small>Нажми на вариант - применится сразу</small></div><div class="set-tiles">
+        <div class="set-row wide"><span>Цвет акцента</span><div class="acc-row">${ACCENTS.map(([k, n, c]) => `<button class="acc" data-set="accent" data-v="${k}" aria-pressed="${(cfg.accent || "gold") === k}" title="${n}" style="--c:${c}"><i></i><span>${n}</span></button>`).join("")}</div></div>
         <div class="set-row"><span>Графика<button class="tipb" data-tip="Полная - стекло, размытие и анимации.&#10;Лёгкая - без размытия и фоновых анимаций, для слабых телефонов и ноутбуков.&#10;Авто - сама включает лёгкую, если прокрутка начинает тормозить${cfg.gfx === "auto" && LS.get("gfxauto", 0) === 1 ? " (сейчас включена лёгкая)" : ""}" aria-label="Что это">i</button></span><div class="pill">${opt("gfx", "auto", "Авто")}${opt("gfx", "full", "Полная")}${opt("gfx", "lite", "Лёгкая")}</div></div>
         <div class="set-row"><span>Цели в «Оценках»<button class="tipb" data-tip="Карточки «Цель по баллу» и «Цель по посещаемости» в разделе «Оценки».&#10;Выключены - карточки скрыты, сами цели сохраняются" aria-label="Что это">i</button></span><div class="pill">${opt("goals", true, "Показывать")}${opt("goals", false, "Скрыть")}</div></div>
         <div class="set-row"><span>Все пары в «Оценках»</span><div class="pill">${opt("gpv", "week", "По неделям")}${opt("gpv", "month", "Весь месяц")}</div></div>
-        <div class="set-row"><span>Цвет акцента</span><div class="acc-row">${ACCENTS.map(([k, n, c]) => `<button class="acc" data-set="accent" data-v="${k}" aria-pressed="${(cfg.accent || "gold") === k}" title="${n}" style="--c:${c}"><i></i><span>${n}</span></button>`).join("")}</div></div>
-        <div class="set-row"><span>Валюта<button class="tipb" data-tip="«Пиксельная» валюта: топкоины показываются как слитки золота, топгемы - как изумруды.&#10;На сам журнал это не влияет" aria-label="Что это">i</button></span><div class="pill">${opt("mc", false, "Как в журнале")}${opt("mc", true, "Пиксельная")}</div></div>
+                <div class="set-row"><span>Валюта<button class="tipb" data-tip="«Пиксельная» валюта: топкоины показываются как слитки золота, топгемы - как изумруды.&#10;На сам журнал это не влияет" aria-label="Что это">i</button></span><div class="pill">${opt("mc", false, "Как в журнале")}${opt("mc", true, "Пиксельная")}</div></div>
         ${CRYPTO ? `<div class="set-row"><span>Крипта на главной<button class="tipb" data-tip="Курс доллара, Bitcoin, Toncoin, Solana, Ethereum и индекс страха и жадности.&#10;Выключена - ничего не загружает и не тратит заряд" aria-label="Что это">i</button></span><div class="pill">${opt("mkt", true, "Вкл")}${opt("mkt", false, "Выкл")}</div></div>` : ""}
-      <section class="card"><div class="hd"><h2>Данные</h2><small>${M.updatedAt ? "обновлено " + new Date(M.updatedAt).toLocaleString("ru-RU") : "ещё не обновлялись"}</small></div>
+      </div></section>
+      <section class="card set-data"><div class="hd"><h2>Данные</h2><small>${M.updatedAt ? "обновлено " + new Date(M.updatedAt).toLocaleString("ru-RU") : "ещё не обновлялись"}</small></div>
         <div class="set-row"><span>Связь с журналом</span><b class="${ok ? "stat-good" : "stat-bad"}">${st.length ? `${ok} из ${st.length} запросов` : "нет запросов"}</b></div>
         <div class="set-row"><span>Способ запросов</span><b>${NET.mode === "page" ? "через страницу журнала" : /gm/.test(NET.mode) ? (HAS_UW ? "через Tampermonkey" : "через расширение (Safari)") : NET.mode === "fetch" ? "через браузер" : "-"}</b></div>
         <div class="btns"><button class="m-btn pri" data-act="sync">${ic("refresh")}Обновить</button><button class="m-btn" data-act="diag">${ic("bug")}Скопировать диагностику</button><button class="m-btn" data-act="reset">Сбросить кэш</button></div></section>
-    </div>
     <section class="card"><div class="hd"><h2>Классический журнал</h2></div>
       <div class="btns"><button class="m-btn" data-act="classic">${ic("ext")}Открыть классический журнал</button><button class="m-btn" data-act="logout">Выйти из аккаунта</button></div>
       <p class="note">Вернуться: кнопка «Вернуться в Дневник» внизу справа в журнале - откроется тот же раздел, где ты был.</p></section>`;
